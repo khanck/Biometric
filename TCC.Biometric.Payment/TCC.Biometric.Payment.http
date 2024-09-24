@@ -1,0 +1,6 @@
+@TCC.Biometric.Payment_HostAddress = http://localhost:5289
+
+GET {{TCC.Biometric.Payment_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
