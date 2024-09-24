@@ -15,7 +15,6 @@ using ILogger = Serilog.ILogger;
 namespace TCC.Biometric.Payment.Controllers
 {
 
-    //[Route("api/digitalid/[controller]")]
     [Route("api/transaction")]
     [ApiController]
     public class TransactionController : Controller
@@ -42,9 +41,8 @@ namespace TCC.Biometric.Payment.Controllers
 
         
         [Route("get")]
-        [HttpGet]
-        //[OpenApiOperation($"{nameof(Workflow.Transaction)}{nameof(Workflow)}{nameof(GetTransactionStatus)}")]
-        //[OpenApiTags("OnboardingTransaction")]  
+        [HttpGet]       
+        //[OpenApiTags("Transaction")]  
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<TransactionResponseDto>))]
         [Produces(typeof(ResultDto<TransactionResponseDto>))]
         public async Task<IActionResult> GetTransaction(Guid Id, CancellationToken cancellationToken = default)
@@ -70,7 +68,40 @@ namespace TCC.Biometric.Payment.Controllers
 
 
             response.success = true;
-            return Ok();
+            return Ok(response);
+
+
+        }
+
+        [Route("getbycustomer")]
+        [HttpGet]
+        //[OpenApiTags("OnboardingTransaction")]  
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<List<TransactionResponseDto>>))]
+        [Produces(typeof(ResultDto<List<TransactionResponseDto>>))]
+        public async Task<IActionResult> GetByCustomer(Guid Id, CancellationToken cancellationToken = default)
+        {  //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
+            //    return Unauthorized();
+
+            var response = new ResultDto<List<TransactionResponseDto>>();
+
+            var result = _transactionRepository.GetAllByCustomerID(Id).Result;
+
+
+            if (result == null)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_001";
+                response.error.errorMessage = "Transactions Not Found";
+                //response.error.errorDetails = "digital ID Transaction Not Found";
+
+                return Conflict(response);
+            }
+
+            response.data = _autoMapper.Map<List<TransactionResponseDto>>(result);
+
+
+            response.success = true;
+            return Ok(response);
 
 
         }
@@ -107,7 +138,8 @@ namespace TCC.Biometric.Payment.Controllers
             var result = (await _transactionRepository.AddAsync(transaction));
             _transactionRepository.SaveChanges();
 
-            //response.data = _autoMapper.Map < TransactionResponseDto > (result);
+            response.data = _autoMapper.Map < TransactionResponseDto > (result.Entity);
+            response.success = true;
 
             return Ok(result);
 

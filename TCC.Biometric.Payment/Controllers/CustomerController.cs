@@ -12,7 +12,6 @@ using ILogger = Serilog.ILogger;
 namespace TCC.Biometric.Payment.Controllers
 {
 
-    //[Route("api/digitalid/[controller]")]
     [Route("api/customer")]
     [ApiController]
     public class CustomerController : Controller
@@ -44,8 +43,7 @@ namespace TCC.Biometric.Payment.Controllers
 
 
         [Route("get")]
-        [HttpGet]
-        //[OpenApiOperation($"{nameof(Workflow.Customer)}{nameof(Workflow)}{nameof(GetCustomerStatus)}")]
+        [HttpGet]     
         //[OpenApiTags("OnboardingCustomer")]  
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<CustomerResponseDto>))]
         [Produces(typeof(ResultDto<CustomerResponseDto>))]
@@ -88,14 +86,6 @@ namespace TCC.Biometric.Payment.Controllers
 
             var response = new ResultDto<CustomerResponseDto>();
 
-            var biometric = _autoMapper.Map<Biometrics>(request.biometric.FirstOrDefault());
-            biometric.createdDate = DateTime.Now;
-            biometric.status = BiometricStatus.pending;
-            biometric.abisReferenceID = "abis ID";
-            var biometricResult = (await _biometricRepository.AddAsync(biometric));
-            _biometricRepository.SaveChanges();
-
-
             var customer = _autoMapper.Map<Customer>(request);
             customer.createdDate = DateTime.Now;
             customer.status = CustomerStatus.pending;
@@ -103,9 +93,20 @@ namespace TCC.Biometric.Payment.Controllers
             var result = (await _customerRepository.AddAsync(customer));
             _customerRepository.SaveChanges();
 
-            //response.data = _autoMapper.Map < CustomerResponseDto > (result);
 
-            return Ok();
+            var biometric = _autoMapper.Map<Biometrics>(request.biometric.FirstOrDefault());
+            biometric.customer_ID = customer.Id;
+            biometric.createdDate = DateTime.Now;
+            biometric.status = BiometricStatus.pending;
+            biometric.abisReferenceID = "abis ID";
+            var biometricResult = (await _biometricRepository.AddAsync(biometric));
+            _biometricRepository.SaveChanges();
+          
+
+            response.data = _autoMapper.Map < CustomerResponseDto > (result.Entity);
+            response.success = true;
+
+            return Ok(response);
 
         }
 

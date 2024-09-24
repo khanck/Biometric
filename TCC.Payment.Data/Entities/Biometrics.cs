@@ -13,7 +13,7 @@ namespace TCC.Payment.Data.Entities
     public record Biometrics : CoreEntity<Guid>
     {
         [ForeignKey("customer")]
-        public Guid customer_ID { get; init; } = default!;     
+        public Guid customer_ID { get; set; } = default!;     
         public BiometricTypes biometricType { get; init; }
 
         [StringLength(20)]

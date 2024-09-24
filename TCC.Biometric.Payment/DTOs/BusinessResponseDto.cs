@@ -5,6 +5,7 @@ namespace TCC.Biometric.Payment.DTOs
 {
     public class BusinessResponseDto
     {
+        public string Id { get; set; }
         [StringLength(200)]
         public string name { get; init; } = null!;
         public BusinessTypes businessTypes { get; set; }
