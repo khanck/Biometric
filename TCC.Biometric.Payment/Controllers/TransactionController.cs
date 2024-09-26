@@ -47,7 +47,15 @@ namespace TCC.Biometric.Payment.Controllers
         [Produces(typeof(ResultDto<TransactionResponseDto>))]
         public async Task<IActionResult> GetTransaction(Guid Id, CancellationToken cancellationToken = default)
         {  //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
-            //    return Unauthorized();
+           //    return Unauthorized();
+
+
+            var data = _alpetaServer.Login();
+            var res = _alpetaServer.GetCurrentUserBiometric().Result;
+
+            var details = _alpetaServer.GetVerificationDetails(res.AuthLogList.FirstOrDefault().IndexKey);
+
+
 
             var response = new ResultDto<TransactionResponseDto>();
 
@@ -115,8 +123,7 @@ namespace TCC.Biometric.Payment.Controllers
             //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
             //    return Unauthorized();
 
-           var data = _alpetaServer.Login();
-             data = _alpetaServer.GetAuthentication("52");
+        
 
 
             var response = new ResultDto<TransactionResponseDto>();

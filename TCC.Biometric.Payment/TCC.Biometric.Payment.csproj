@@ -9,8 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Config\AuthenticationService.cs" />
-    <Compile Remove="Config\IAuthenticationService.cs" />
     <Compile Remove="Handlers\ExceptionHandler.cs" />
     <Compile Remove="Interfaces\IExceptionHandler.cs" />
   </ItemGroup>
@@ -48,7 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Config\" />
     <Folder Include="Enums\" />
     <Folder Include="Interfaces\" />
     <Folder Include="Utilities\" />

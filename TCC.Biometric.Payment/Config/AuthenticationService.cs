@@ -1,14 +1,16 @@
-﻿namespace TCC.DigitalID.Services.Config
-{
-    public class AuthenticationService : IAuthenticationService
-    {
-        public Configurations _configuration;
-        private readonly NafathConfigurations _nafathConfigurations;
+﻿using Microsoft.Extensions.Options;
+using System.Net.Http.Headers;
+using System.Text;
 
-        public AuthenticationService(IOptions<NafathConfigurations> nafathConfigurations, IOptions<Configurations> configuration)
+namespace TCC.Biometric.Payment.Config
+{
+    public class AuthenticationService: IAuthenticationService
+    {
+        public AuthConfiguration _configuration;
+
+        public AuthenticationService(IOptions<AuthConfiguration> configuration)
         {
             _configuration = configuration.Value;
-            _nafathConfigurations = nafathConfigurations.Value;
         }
         /// <summary>
         /// Basic authentication 
@@ -46,19 +48,6 @@
 
         }
 
-        /// <summary>
-        /// ApiKey
-        /// </summary>
-        /// <param name="authHeader"></param>
-        /// <returns></returns>
-        public bool IsValidNafathApiKey(AuthenticationHeaderValue authHeader)
-        {
-
-            if ((_nafathConfigurations.ApiScheme == authHeader.Scheme) && (_nafathConfigurations.ApiKey == authHeader.Parameter))
-                return true;
-            else
-                return false; // INVALID_USER
-
-        }
+   
     }
 }
