@@ -11,8 +11,9 @@ namespace TCC.Payment.Integration.Interfaces
     public interface IAlpetaServer
     {
          Task<AlpetaConfiguration> Login();
-        Task<BiometricVerification> VerifyUserBiometric(string userId);
-        Task<BiometricVerification> GetCurrentUserBiometric();
-        Task<BiometricVerification> GetVerificationDetails(Int64 index);
+        Task<BiometricAuthentication> VerifyUserBiometric(string userId);
+        Task<BiometricAuthentication> GetCurrentUserBiometric();
+        Task<BiometricAuthentication> GetCurrentUserBiometric(string userID);
+        Task<BiometricAuthentication> GetVerificationDetails(Int64 index);
     }
 }

@@ -13,5 +13,6 @@ namespace TCC.Payment.Integration.Config
         public string UserId { get; set; }
         public string Password { get; set; }
         public int ApiReqTimeout { get; set; }
+        public int VerificationTimeout { get; set; }
     }
 }
