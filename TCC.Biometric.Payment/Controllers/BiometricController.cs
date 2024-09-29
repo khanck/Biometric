@@ -80,7 +80,7 @@ namespace TCC.Biometric.Payment.Controllers
                 return NotFound(response);
             }
 
-            var customer = _customerRepository.GetByCustomerID(verificationDetail.AuthLogDetail.UserID).Result;
+            var customer = _customerRepository.GetByCustomerID(Convert.ToInt32(verificationDetail.AuthLogDetail.UserID)).Result;
 
             if (customer == null) 
             {

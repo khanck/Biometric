@@ -42,9 +42,9 @@ namespace TCC.Biometric.Payment
             if (_configuration.GetConnectionString("ConnecetType") == "Sqlserver")
             {
                 services.AddDbContext<AppDbContext>(options =>
-               // options.UseSqlServer(_configuration.GetConnectionString("SqlConnecet"),
-               options.UseInMemoryDatabase("InMemoryDb")
-               // optionsBuilder => optionsBuilder.MigrationsAssembly("TCC.Payment.Migrations.SqlServer"))
+                options.UseSqlServer(_configuration.GetConnectionString("SqlConnecet"),
+               //options.UseInMemoryDatabase("InMemoryDb")
+               optionsBuilder => optionsBuilder.MigrationsAssembly("TCC.Payment.Migrations.SqlServer"))
                );
             }        
             services.AddControllers();
