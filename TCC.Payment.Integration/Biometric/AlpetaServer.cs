@@ -199,7 +199,7 @@ namespace TCC.Payment.Integration.Biometric
                             result = JsonConvert.DeserializeObject<BiometricAuthentication>(await response.Content.ReadAsStringAsync());
                            
                             if(result.AuthLogList!=null)
-                            result.AuthLogList= result.AuthLogList.FindAll(o=>(o.EventTime>=DateTime.Now.AddSeconds(-_alpetaConfiguration.VerificationTimeout) && o.EventTime <= DateTime.Now) &o.AuthResult==0 & o.AuthType == 6);  //for live success Biometric Verification  VerificationTimeout  will be in seconnds 
+                            result.AuthLogList= result.AuthLogList.FindAll(o=>(o.EventTime>=DateTime.Now.AddSeconds(-_alpetaConfiguration.VerificationTimeout) && o.EventTime <= DateTime.Now) &o.AuthResult==0 );  //for live success Biometric Verification  VerificationTimeout  will be in seconnds 
 
                             _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
                         }
@@ -261,7 +261,7 @@ namespace TCC.Payment.Integration.Biometric
                             result = JsonConvert.DeserializeObject<BiometricAuthentication>(await response.Content.ReadAsStringAsync());
 
                             if (result.AuthLogList != null)
-                                result.AuthLogList = result.AuthLogList.FindAll(o => (o.EventTime >= DateTime.Now.AddSeconds(-_alpetaConfiguration.VerificationTimeout) && o.EventTime <= DateTime.Now) & o.AuthResult == 0 & o.AuthType == 6);  //for live success Biometric Verification  VerificationTimeout  will be in seconnds 
+                                result.AuthLogList = result.AuthLogList.FindAll(o => (o.EventTime >= DateTime.Now.AddSeconds(-_alpetaConfiguration.VerificationTimeout) && o.EventTime <= DateTime.Now) & o.AuthResult == 0 );  //for live success Biometric Verification  VerificationTimeout  will be in seconnds 
 
                             _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
                         }

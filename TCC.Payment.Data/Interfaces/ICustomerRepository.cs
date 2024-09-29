@@ -13,7 +13,7 @@ namespace TCC.Payment.Data.Interfaces
         Customer GetByID(Guid id);
         Task<Customer> GetByEmail(string? email);
         Task<Customer> GetByMobile(string? mobile);
-        Task<Customer> GetByCustomerID(string customerID);
+        Task<Customer> GetByCustomerID(int customerID);
         Task<Customer> Login(string email, string password);
         IQueryable<Customer> GetAllAsQuerable();
         Customer Add(Customer obj);
