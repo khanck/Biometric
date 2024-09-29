@@ -12,7 +12,6 @@ using ILogger = Serilog.ILogger;
 namespace TCC.Biometric.Payment.Controllers
 {
 
-    //[Route("api/digitalid/[controller]")]
     [Route("api/paymentCard")]
     [ApiController]
     public class PaymentCardController : Controller
@@ -33,8 +32,7 @@ namespace TCC.Biometric.Payment.Controllers
 
 
         [Route("get")]
-        [HttpGet]
-        //[OpenApiOperation($"{nameof(Workflow.PaymentCard)}{nameof(Workflow)}{nameof(GetPaymentCardStatus)}")]
+        [HttpGet]       
         //[OpenApiTags("OnboardingPaymentCard")]  
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<PaymentCardResponseDto>))]
         [Produces(typeof(ResultDto<PaymentCardResponseDto>))]
@@ -86,9 +84,10 @@ namespace TCC.Biometric.Payment.Controllers
             var result = (await _paymentCardRepository.AddAsync(paymentCard));
             _paymentCardRepository.SaveChanges();
 
-            //response.data = _autoMapper.Map < PaymentCardResponseDto > (result);
+            response.data = _autoMapper.Map < PaymentCardResponseDto > (result.Entity);
+            response.success = true;
 
-            return Ok();
+            return Ok(response);
 
         }
 

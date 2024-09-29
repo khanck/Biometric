@@ -13,6 +13,10 @@ namespace TCC.Payment.Integration.Models
     }
     public class SaveUserToTerminalDto
     {
+        public SaveUserToTerminalDto()
+        {
+                DownloadInfo = new DownloadInfo();
+        }
         public DownloadInfo DownloadInfo { get; set; }
         public int UserId { get; set; }
         public int TerminalId { get; set; }

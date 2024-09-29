@@ -14,7 +14,6 @@ using ILogger = Serilog.ILogger;
 namespace TCC.Biometric.Payment.Controllers
 {
 
-    //[Route("api/digitalid/[controller]")]
     [Route("api/customer")]
     [ApiController]
     public class CustomerController : Controller
@@ -49,8 +48,7 @@ namespace TCC.Biometric.Payment.Controllers
 
 
         [Route("get")]
-        [HttpGet]
-        //[OpenApiOperation($"{nameof(Workflow.Customer)}{nameof(Workflow)}{nameof(GetCustomerStatus)}")]
+        [HttpGet]     
         //[OpenApiTags("OnboardingCustomer")]  
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<CustomerResponseDto>))]
         [Produces(typeof(ResultDto<CustomerResponseDto>))]
@@ -94,15 +92,24 @@ namespace TCC.Biometric.Payment.Controllers
             await _alpetaServer.Login();
             var response = new ResultDto<CustomerResponseDto>();
 
+            var customer = _autoMapper.Map<Customer>(request);
+            customer.createdDate = DateTime.Now;
+            customer.status = CustomerStatus.pending;
+
+            var result = (await _customerRepository.AddAsync(customer));
+            _customerRepository.SaveChanges();
+
+
             var biometric = _autoMapper.Map<Biometrics>(request.biometric.FirstOrDefault());
+            biometric.customer_ID = customer.Id;
             biometric.createdDate = DateTime.Now;
             biometric.status = BiometricStatus.pending;
             biometric.abisReferenceID = "abis ID";
-         //   var biometricresult = await _biometricRepository.AddAsync(biometric);
-           // _biometricRepository.SaveChanges();
+            var biometricResult = (await _biometricRepository.AddAsync(biometric));
+            _biometricRepository.SaveChanges();
+          
 
-
-            var customer = _autoMapper.Map<Customer>(request);
+           // var customer = _autoMapper.Map<Customer>(request);
             //customer.Id = biometricResult.Entity.Id;
             customer.createdDate = DateTime.Now;
             customer.status = CustomerStatus.pending;
@@ -132,11 +139,17 @@ namespace TCC.Biometric.Payment.Controllers
             createUserRequestDTO.UserFaceWTInfo.Add(userFaceWTInfo);
             
             await _alpetaServer.CreateUser(createUserRequestDTO);
+            DownloadInfo downloadInfo = new DownloadInfo();
+            downloadInfo.Offset = 1;
+            downloadInfo.Total = 1;
+            await _alpetaServer.SaveUserToTerminal(new SaveUserToTerminalDto
+            {
+                TerminalId = 1,
+                UserId = customer.TerminalUserId,
+                DownloadInfo = downloadInfo
+            }) ;
 
-          //  var result = (await _customerRepository.AddAsync(customer));
-           // _customerRepository.SaveChanges();
-
-            return Ok();
+            return Ok(response);
 
         }
 

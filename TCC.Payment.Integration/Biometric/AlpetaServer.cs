@@ -102,16 +102,16 @@ namespace TCC.Payment.Integration.Biometric
 
 
 
-        public async Task<AlpetaConfiguration> GetAuthentication(string userId)
+        public async Task<BiometricVerification> VerifyUserBiometric(string userId)
         {
 
-            AlpetaConfiguration? result = new AlpetaConfiguration();
+            BiometricVerification? result = new BiometricVerification();
 
             Task.Run(async () =>
             {
                 try
                 {
-                    string uri = String.Format(_alpetaConfiguration.Endpoint + "authLogs?startTime={0}&endTime={1}&searchCategory=user_id&searchKeyword={2}&offset=0&limit=1", DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.Now.Date.ToString("yyyy-MM-dd HH:mm:ss"), userId);
+                    string uri = String.Format(_alpetaConfiguration.Endpoint + "authLogs?startTime={0}&endTime={1}&searchCategory=user_id&searchKeyword={2}&offset=0&limit=1", DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.Now.Date.ToString("yyyy-MM-dd HH:mm:ss"), userId);
 
                     HttpClient client = new HttpClient();
                     client.DefaultRequestHeaders.Accept.Clear();
@@ -133,10 +133,68 @@ namespace TCC.Payment.Integration.Biometric
                         if (response.IsSuccessStatusCode)
                         {
                             var str = response.Content.ReadAsStringAsync();
-                            //result = JsonConvert.DeserializeObject<AuthorizeResponseDto>(await response.Content.ReadAsStringAsync());
+                            result = JsonConvert.DeserializeObject<BiometricVerification>(await response.Content.ReadAsStringAsync());                      
+                           
+
+                            _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
+                        }
+                        else
+                        {
                             //result.ResultCode = (int)response.StatusCode;
-                            //result.PersonID = AuthorizeDto.id;
-                            //result.status = result.random > 0 ? "Pending" : null;
+                            //result.message = (await response.Content.ReadAsStringAsync());
+
+                            _logger.Error(" Error in GetAuthentication: transaction ID:{0} {1}"/*, result.transId, JsonConvert.SerializeObject(result)*/);
+
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    //result.ResultCode = 500;
+                    //result.message = ex.Message;
+
+                    _logger.Error("GetAuthentication:Internal error {0}", ex);
+                }
+
+            }).Wait();
+            return result;
+
+
+        }
+        public async Task<BiometricVerification> GetCurrentUserBiometric()
+        {
+
+            BiometricVerification? result = new BiometricVerification();
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    string uri = String.Format(_alpetaConfiguration.Endpoint + "authLogs?startTime={0}&endTime={1}&offset=0&limit=1", DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.Now.Date.ToString("yyyy-MM-dd HH:mm:ss"));
+
+                    HttpClient client = new HttpClient();
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    //client.DefaultRequestHeaders.Authorization = GetAuthenticationHeader(Configurations);
+                    client.Timeout = TimeSpan.FromSeconds(_alpetaConfiguration.ApiReqTimeout);
+
+                    //HttpClient client = new Authentication().GetHttpClient(_Configurations);
+                    client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+                    //AuthorizeDto.action = _Configurations.Action;
+                    string inputJson = JsonConvert.SerializeObject(_alpetaConfiguration);
+                    HttpContent inputContent = new StringContent(inputJson, Encoding.UTF8, "application/json");
+
+
+                    using (HttpResponseMessage response = await client.GetAsync(uri))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var str = response.Content.ReadAsStringAsync();
+                            result = JsonConvert.DeserializeObject<BiometricVerification>(await response.Content.ReadAsStringAsync());
+
 
                             _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
                         }
@@ -309,6 +367,67 @@ namespace TCC.Payment.Integration.Biometric
             return result;
         }
 
+
+        public async Task<BiometricVerification> GetVerificationDetails(Int64 index)
+        {
+
+            BiometricVerification? result = new BiometricVerification();
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    string uri = String.Format(_alpetaConfiguration.Endpoint + "authLogs/{0}", index);
+
+                    HttpClient client = new HttpClient();
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    //client.DefaultRequestHeaders.Authorization = GetAuthenticationHeader(Configurations);
+                    client.Timeout = TimeSpan.FromSeconds(_alpetaConfiguration.ApiReqTimeout);
+
+                    //HttpClient client = new Authentication().GetHttpClient(_Configurations);
+                    client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+                    //AuthorizeDto.action = _Configurations.Action;
+                    string inputJson = JsonConvert.SerializeObject(_alpetaConfiguration);
+                    HttpContent inputContent = new StringContent(inputJson, Encoding.UTF8, "application/json");
+
+
+                    using (HttpResponseMessage response = await client.GetAsync(uri))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var str = response.Content.ReadAsStringAsync();
+                            result = JsonConvert.DeserializeObject<BiometricVerification>(await response.Content.ReadAsStringAsync());
+
+
+                            _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
+                        }
+                        else
+                        {
+                            //result.ResultCode = (int)response.StatusCode;
+                            //result.message = (await response.Content.ReadAsStringAsync());
+
+                            _logger.Error(" Error in GetAuthentication: transaction ID:{0} {1}"/*, result.transId, JsonConvert.SerializeObject(result)*/);
+
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    //result.ResultCode = 500;
+                    //result.message = ex.Message;
+
+                    _logger.Error("GetAuthentication:Internal error {0}", ex);
+                }
+
+            }).Wait();
+            return result;
+
+
+        }
 
     }
 }

@@ -14,8 +14,4 @@
     <ProjectReference Include="..\TCC.Payment.Data\TCC.Payment.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-  </ItemGroup>
-
 </Project>

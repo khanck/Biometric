@@ -2,24 +2,29 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Newtonsoft.Json;
 using System;
+using System.Net.Http.Headers;
+using System.Net;
+using System.Text;
 using TCC.Biometric.Payment.DTOs;
 using TCC.Payment.Data.Entities;
 using TCC.Payment.Data.Enums;
 using TCC.Payment.Data.Interfaces;
 using TCC.Payment.Data.Repositories;
 using TCC.Payment.Integration.Biometric;
+using TCC.Payment.Integration.Config;
 using TCC.Payment.Integration.Interfaces;
 using ILogger = Serilog.ILogger;
 
 namespace TCC.Biometric.Payment.Controllers
 {
 
-    //[Route("api/digitalid/[controller]")]
     [Route("api/transaction")]
     [ApiController]
     public class TransactionController : Controller
     {
+
         private readonly ITransactionRepository _transactionRepository;
         private readonly IBiometricVerificationRepository _biometricVerificationRepository;
         private readonly IAlpetaServer _alpetaServer;
@@ -42,14 +47,21 @@ namespace TCC.Biometric.Payment.Controllers
 
         
         [Route("get")]
-        [HttpGet]
-        //[OpenApiOperation($"{nameof(Workflow.Transaction)}{nameof(Workflow)}{nameof(GetTransactionStatus)}")]
-        //[OpenApiTags("OnboardingTransaction")]  
+        [HttpGet]       
+        //[OpenApiTags("Transaction")]  
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<TransactionResponseDto>))]
         [Produces(typeof(ResultDto<TransactionResponseDto>))]
         public async Task<IActionResult> GetTransaction(Guid Id, CancellationToken cancellationToken = default)
         {  //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
-            //    return Unauthorized();
+           //    return Unauthorized();
+
+
+            var data = _alpetaServer.Login();
+            var res = _alpetaServer.GetCurrentUserBiometric().Result;
+
+            var details = _alpetaServer.GetVerificationDetails(res.AuthLogList.FirstOrDefault().IndexKey);
+
+
 
             var response = new ResultDto<TransactionResponseDto>();
 
@@ -70,7 +82,41 @@ namespace TCC.Biometric.Payment.Controllers
 
 
             response.success = true;
-            return Ok();
+            return Ok(response);
+
+
+        }
+
+     
+        [Route("getbycustomer")]
+        [HttpGet]
+        //[OpenApiTags("OnboardingTransaction")]  
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<List<TransactionResponseDto>>))]
+        [Produces(typeof(ResultDto<List<TransactionResponseDto>>))]
+        public async Task<IActionResult> GetByCustomer(Guid Id, CancellationToken cancellationToken = default)
+        {  //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
+            //    return Unauthorized();
+
+            var response = new ResultDto<List<TransactionResponseDto>>();
+
+            var result = _transactionRepository.GetAllByCustomerID(Id).Result;
+
+
+            if (result == null)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_001";
+                response.error.errorMessage = "Transactions Not Found";
+                //response.error.errorDetails = "digital ID Transaction Not Found";
+
+                return Conflict(response);
+            }
+
+            response.data = _autoMapper.Map<List<TransactionResponseDto>>(result);
+
+
+            response.success = true;
+            return Ok(response);
 
 
         }
@@ -84,8 +130,7 @@ namespace TCC.Biometric.Payment.Controllers
             //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
             //    return Unauthorized();
 
-           var data = _alpetaServer.Login();
-             data = _alpetaServer.GetAuthentication("52");
+        
 
 
             var response = new ResultDto<TransactionResponseDto>();
@@ -107,7 +152,8 @@ namespace TCC.Biometric.Payment.Controllers
             var result = (await _transactionRepository.AddAsync(transaction));
             _transactionRepository.SaveChanges();
 
-            //response.data = _autoMapper.Map < TransactionResponseDto > (result);
+            response.data = _autoMapper.Map < TransactionResponseDto > (result.Entity);
+            response.success = true;
 
             return Ok(result);
 

@@ -14,7 +14,10 @@ namespace TCC.Payment.Data.Repositories
         public TransactionRepository(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
-      
+        public async Task<List<Transaction>> GetAllByCustomerID(Guid customerID)
+        {
+            return await DbSet.Where(o => o.paymentCard.customer_ID == customerID).ToListAsync();
+        }
 
     }
 }
