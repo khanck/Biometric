@@ -170,6 +170,36 @@ namespace TCC.Biometric.Payment.Controllers
 
         }
 
+        [Route("login")]
+        [HttpPost]
+        [ProducesResponseType(typeof(ResultDto<CustomerResponseDto>), StatusCodes.Status200OK)]
+        [Produces(typeof(ResultDto<CustomerResponseDto>))]
+        public async Task<IActionResult> Login(LoginRequestDto request, CancellationToken cancellationToken = default)
+        {
+            //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
+            //    return Unauthorized();
+
+            var response = new ResultDto<CustomerResponseDto>();
+
+            var customer = _customerRepository.Login(request.email, request.password).Result;
+
+
+            if (customer == null)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_001";
+                response.error.errorMessage = "Invalid user";
+                //response.error.errorDetails = "digital ID Customer Not Found";
+
+                return Conflict(response);
+            }
+
+            response.data = _autoMapper.Map<CustomerResponseDto>(customer);
+
+
+            response.success = true;
+            return Ok(response);
+        }
         private static int GetPictureSizeInKB(string base64Picture)
         {
             // Remove any data URL prefix (if present), e.g., "data:image/png;base64,"
@@ -186,5 +216,6 @@ namespace TCC.Biometric.Payment.Controllers
 
             return pictureBytes.Length;
         }
+
     }
-}
+    }

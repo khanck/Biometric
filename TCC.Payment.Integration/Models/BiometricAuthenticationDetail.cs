@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TCC.Payment.Integration.Models
 {
-    public class BiometricVerificationDetail
+    public class BiometricAuthenticationDetail
     {
         public Int64 IndexKey { get; set; }
         public int TerminalID { get; set; }
@@ -16,8 +16,8 @@ namespace TCC.Payment.Integration.Models
         public string UniqueID { get; set; }
         public DateTime EventTime { get; set; }
         public DateTime ServerRecordTime { get; set; }
-        public int AuthType { get; set; }
-        public int AuthResult { get; set; }
+        public int AuthType { get; set; }  //3=face & PIN, 6=face
+        public int AuthResult { get; set; }  //0 =success,1=  failed 
         public string Card { get; set; }
         public int Func { get; set; }
         public int FuncType { get; set; }

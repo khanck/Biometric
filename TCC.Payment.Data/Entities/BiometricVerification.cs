@@ -20,6 +20,8 @@ namespace TCC.Payment.Data.Entities
         public DateTime createdDate { get; set; }
         [StringLength(1000)]
         public string verificationResponse { get; set; }
+
+        public string verificationID { get; set; }
         public VerificationStatus verificationStatus { get; set; }
 
 

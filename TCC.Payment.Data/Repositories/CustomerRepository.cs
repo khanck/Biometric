@@ -22,6 +22,15 @@ namespace TCC.Payment.Data.Repositories
         {
             return await DbSet.Where(o => o.mobile == mobile).FirstOrDefaultAsync();
         }
+        public async Task<Customer> Login(string email, string password)
+        {
+            return await DbSet.Where(o => o.email == email & o.password == password.Trim()).FirstOrDefaultAsync();
+        }
+        public async Task<Customer> GetByCustomerID(string customerID)
+        {
+            return await DbSet.Where(o => o.mobile == customerID).FirstOrDefaultAsync();
+        }
+
 
     }
 }

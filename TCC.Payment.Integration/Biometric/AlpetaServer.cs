@@ -26,6 +26,8 @@ namespace TCC.Payment.Integration.Biometric
         {
             _alpetaConfiguration = alpetaConfiguration.Value;
             _logger = logger;
+
+            Login();
         }
 
         public void Dispose()
@@ -102,17 +104,18 @@ namespace TCC.Payment.Integration.Biometric
 
 
 
-        public async Task<BiometricVerification> VerifyUserBiometric(string userId)
+        public async Task<BiometricAuthentication> VerifyUserBiometric(string userId)
         {
 
-            BiometricVerification? result = new BiometricVerification();
+            BiometricAuthentication? result = new BiometricAuthentication();
 
             Task.Run(async () =>
             {
                 try
                 {
-                    string uri = String.Format(_alpetaConfiguration.Endpoint + "authLogs?startTime={0}&endTime={1}&searchCategory=user_id&searchKeyword={2}&offset=0&limit=1", DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.Now.Date.ToString("yyyy-MM-dd HH:mm:ss"), userId);
+                    string uri = String.Format(_alpetaConfiguration.Endpoint + "authLogs?startTime={0}&endTime={1}&searchCategory=user_id&searchKeyword={2}&offset=0&limit=1", DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-dd"), DateTime.Now.Date.ToString("yyyy-MM-dd"), userId);
 
+                    //string uri = String.Format(_alpetaConfiguration.Endpoint + "authLogs?startTime={0}&endTime={1}&searchCategory=user_id&searchKeyword={2}&offset=0&limit=1", DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.Now.Date.ToString("yyyy-MM-dd HH:mm:ss"), userId);
                     HttpClient client = new HttpClient();
                     client.DefaultRequestHeaders.Accept.Clear();
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -133,7 +136,7 @@ namespace TCC.Payment.Integration.Biometric
                         if (response.IsSuccessStatusCode)
                         {
                             var str = response.Content.ReadAsStringAsync();
-                            result = JsonConvert.DeserializeObject<BiometricVerification>(await response.Content.ReadAsStringAsync());                      
+                            result = JsonConvert.DeserializeObject<BiometricAuthentication>(await response.Content.ReadAsStringAsync());                      
                            
 
                             _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
@@ -162,16 +165,16 @@ namespace TCC.Payment.Integration.Biometric
 
 
         }
-        public async Task<BiometricVerification> GetCurrentUserBiometric()
+        public async Task<BiometricAuthentication> GetCurrentUserBiometric()
         {
 
-            BiometricVerification? result = new BiometricVerification();
+            BiometricAuthentication? result = new BiometricAuthentication();
 
             Task.Run(async () =>
             {
                 try
                 {
-                    string uri = String.Format(_alpetaConfiguration.Endpoint + "authLogs?startTime={0}&endTime={1}&offset=0&limit=1", DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.Now.Date.ToString("yyyy-MM-dd HH:mm:ss"));
+                    string uri = String.Format(_alpetaConfiguration.Endpoint + "authLogs?startTime={0}&endTime={1}&offset=0&limit=1", DateTime.Now.ToString("yyyy-MM-dd"), DateTime.Now.ToString("yyyy-MM-dd"));
 
                     HttpClient client = new HttpClient();
                     client.DefaultRequestHeaders.Accept.Clear();
@@ -193,8 +196,72 @@ namespace TCC.Payment.Integration.Biometric
                         if (response.IsSuccessStatusCode)
                         {
                             var str = response.Content.ReadAsStringAsync();
-                            result = JsonConvert.DeserializeObject<BiometricVerification>(await response.Content.ReadAsStringAsync());
+                            result = JsonConvert.DeserializeObject<BiometricAuthentication>(await response.Content.ReadAsStringAsync());
+                           
+                            if(result.AuthLogList!=null)
+                            result.AuthLogList= result.AuthLogList.FindAll(o=>(o.EventTime>=DateTime.Now.AddSeconds(-_alpetaConfiguration.VerificationTimeout) && o.EventTime <= DateTime.Now) &o.AuthResult==0 & o.AuthType == 6);  //for live success Biometric Verification  VerificationTimeout  will be in seconnds 
 
+                            _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
+                        }
+                        else
+                        {
+                            //result.ResultCode = (int)response.StatusCode;
+                            //result.message = (await response.Content.ReadAsStringAsync());
+
+                            _logger.Error(" Error in GetAuthentication: transaction ID:{0} {1}"/*, result.transId, JsonConvert.SerializeObject(result)*/);
+
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    //result.ResultCode = 500;
+                    //result.message = ex.Message;
+
+                    _logger.Error("GetAuthentication:Internal error {0}", ex);
+                }
+
+            }).Wait();
+            return result;
+
+
+        }
+        public async Task<BiometricAuthentication> GetCurrentUserBiometric(string userID)
+        {
+
+            BiometricAuthentication? result = new BiometricAuthentication();
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    string uri = String.Format(_alpetaConfiguration.Endpoint + "authLogs?startTime={0}&endTime={1}&searchCategory=user_id&searchKeyword={2}&offset=0&limit=1", DateTime.Now.ToString("yyyy-MM-dd"), DateTime.Now.ToString("yyyy-MM-dd"),userID);
+
+                    HttpClient client = new HttpClient();
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    //client.DefaultRequestHeaders.Authorization = GetAuthenticationHeader(Configurations);
+                    client.Timeout = TimeSpan.FromSeconds(_alpetaConfiguration.ApiReqTimeout);
+
+                    //HttpClient client = new Authentication().GetHttpClient(_Configurations);
+                    client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+                    //AuthorizeDto.action = _Configurations.Action;
+                    string inputJson = JsonConvert.SerializeObject(_alpetaConfiguration);
+                    HttpContent inputContent = new StringContent(inputJson, Encoding.UTF8, "application/json");
+
+
+                    using (HttpResponseMessage response = await client.GetAsync(uri))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var str = response.Content.ReadAsStringAsync();
+                            result = JsonConvert.DeserializeObject<BiometricAuthentication>(await response.Content.ReadAsStringAsync());
+
+                            if (result.AuthLogList != null)
+                                result.AuthLogList = result.AuthLogList.FindAll(o => (o.EventTime >= DateTime.Now.AddSeconds(-_alpetaConfiguration.VerificationTimeout) && o.EventTime <= DateTime.Now) & o.AuthResult == 0 & o.AuthType == 6);  //for live success Biometric Verification  VerificationTimeout  will be in seconnds 
 
                             _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
                         }
@@ -368,10 +435,10 @@ namespace TCC.Payment.Integration.Biometric
         }
 
 
-        public async Task<BiometricVerification> GetVerificationDetails(Int64 index)
+        public async Task<BiometricAuthentication> GetVerificationDetails(Int64 index)
         {
 
-            BiometricVerification? result = new BiometricVerification();
+            BiometricAuthentication? result = new BiometricAuthentication();
 
             Task.Run(async () =>
             {
@@ -399,7 +466,7 @@ namespace TCC.Payment.Integration.Biometric
                         if (response.IsSuccessStatusCode)
                         {
                             var str = response.Content.ReadAsStringAsync();
-                            result = JsonConvert.DeserializeObject<BiometricVerification>(await response.Content.ReadAsStringAsync());
+                            result = JsonConvert.DeserializeObject<BiometricAuthentication>(await response.Content.ReadAsStringAsync());
 
 
                             _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
