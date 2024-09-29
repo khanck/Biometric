@@ -257,7 +257,7 @@ namespace TCC.Biometric.Payment.Controllers
 
             var customer = _customerRepository.GetByID(request.customer_ID);
 
-            var verification = _alpetaServer.GetCurrentUserBiometric(customer.mobile).Result;  //need to change to user id
+            var verification = _alpetaServer.GetCurrentUserBiometric(customer.TerminalUserId.ToString()).Result;  //need to change to user id
 
             if (verification.AuthLogList.IsNullOrEmpty())
             {

@@ -17,6 +17,7 @@ using ILogger = Serilog.ILogger;
 using TCC.Payment.Integration.Config;
 using TCC.Payment.Integration.Interfaces;
 using TCC.Payment.Integration.Biometric;
+using TCC.Biometric.Payment.Config;
 
 namespace TCC.Biometric.Payment
 {
