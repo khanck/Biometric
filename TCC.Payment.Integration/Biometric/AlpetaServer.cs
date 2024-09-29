@@ -12,6 +12,7 @@ using System.Net.Http.Headers;
 using System.Web;
 using TCC.Payment.Integration.Models;
 using Microsoft.AspNetCore.Http;
+using System.Text.Unicode;
 
 
 namespace TCC.Payment.Integration.Biometric
@@ -288,8 +289,153 @@ namespace TCC.Payment.Integration.Biometric
 
 
         }
+      
+        public async Task<AlpetaConfiguration> CreateUser(CreateUserRequestDTO userId)
+        {
+            
+            AlpetaConfiguration? result = new AlpetaConfiguration();
 
-        public async Task<BiometricAuthentication> GetVerificationDetails (Int64 index)
+           
+                try
+                {
+                    string uri = String.Format(_alpetaConfiguration.Endpoint + "users?UserID={0}", userId.UserInfo.ID);
+
+                    HttpClient client = new HttpClient();
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    var body = JsonConvert.SerializeObject(userId);
+                    var content = new StringContent(body,Encoding.UTF8,"application/json");
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    //client.DefaultRequestHeaders.Authorization = GetAuthenticationHeader(Configurations);
+                    client.Timeout = TimeSpan.FromSeconds(_alpetaConfiguration.ApiReqTimeout);
+
+                    //HttpClient client = new Authentication().GetHttpClient(_Configurations);
+                    client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+                Console.WriteLine(content);
+                    using (HttpResponseMessage response = await client.PostAsync(uri,content))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var str = response.Content.ReadAsStringAsync();
+                           _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
+                        }
+                        else
+                        {
+                         _logger.Error(" Error in GetAuthentication: transaction ID:{0} {1}"/*, result.transId, JsonConvert.SerializeObject(result)*/);
+                            
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    //result.ResultCode = 500;
+                    //result.message = ex.Message;
+
+                    _logger.Error("GetAuthentication:Internal error {0}", ex);
+                }
+
+           
+            return result;
+
+
+        }
+
+        public async Task<AlpetaConfiguration> UpdateUserPicture(UpdateUserPictureReqDTO updateUserPictureReqDTO)
+        {
+            AlpetaConfiguration? result = new AlpetaConfiguration();
+
+
+            try
+            {
+                string uri = String.Format(_alpetaConfiguration.Endpoint + "users/{0}/picture", updateUserPictureReqDTO.UserId);
+
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Accept.Clear();
+                var body = JsonConvert.SerializeObject(new { ImageType = updateUserPictureReqDTO.ImageType, Picture = updateUserPictureReqDTO.Picture});
+                var content = new StringContent(body, Encoding.UTF8, "application/json");
+                client.Timeout = TimeSpan.FromSeconds(_alpetaConfiguration.ApiReqTimeout);
+
+                //HttpClient client = new Authentication().GetHttpClient(_Configurations);
+                client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+                Console.WriteLine(content);
+                using (HttpResponseMessage response = await client.PutAsync(uri, content))
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var str = response.Content.ReadAsStringAsync();
+                        _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
+                    }
+                    else
+                    {
+                        _logger.Error(" Error in GetAuthentication: transaction ID:{0} {1}"/*, result.transId, JsonConvert.SerializeObject(result)*/);
+
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //result.ResultCode = 500;
+                //result.message = ex.Message;
+
+                _logger.Error("GetAuthentication:Internal error {0}", ex);
+            }
+
+
+            return result;
+        }
+
+        public async Task<AlpetaConfiguration> SaveUserToTerminal(SaveUserToTerminalDto saveUserToTerminalDto)
+        {
+            AlpetaConfiguration? result = new AlpetaConfiguration();
+
+
+            try
+            {
+                string uri = String.Format(_alpetaConfiguration.Endpoint + "terminals/{0}/users/{1}", saveUserToTerminalDto.TerminalId, saveUserToTerminalDto.UserId);
+
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Accept.Clear();
+                var body = JsonConvert.SerializeObject(new { saveUserToTerminalDto .DownloadInfo});
+                var content = new StringContent(body, Encoding.UTF8, "application/json");
+                client.Timeout = TimeSpan.FromSeconds(_alpetaConfiguration.ApiReqTimeout);
+
+                //HttpClient client = new Authentication().GetHttpClient(_Configurations);
+                client.DefaultRequestHeaders.Add("Cookie", cookies);
+
+                Console.WriteLine(content);
+                using (HttpResponseMessage response = await client.PostAsync(uri, content))
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var str = response.Content.ReadAsStringAsync();
+                        _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
+                    }
+                    else
+                    {
+                        _logger.Error(" Error in GetAuthentication: transaction ID:{0} {1}"/*, result.transId, JsonConvert.SerializeObject(result)*/);
+
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //result.ResultCode = 500;
+                //result.message = ex.Message;
+
+                _logger.Error("GetAuthentication:Internal error {0}", ex);
+            }
+
+
+            return result;
+        }
+
+
+        public async Task<BiometricAuthentication> GetVerificationDetails(Int64 index)
         {
 
             BiometricAuthentication? result = new BiometricAuthentication();
@@ -349,5 +495,6 @@ namespace TCC.Payment.Integration.Biometric
 
 
         }
+
     }
 }

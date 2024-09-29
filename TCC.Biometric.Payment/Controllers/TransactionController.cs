@@ -2,14 +2,19 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Newtonsoft.Json;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Net.Http.Headers;
+using System.Net;
+using System.Text;
 using TCC.Biometric.Payment.DTOs;
 using TCC.Payment.Data.Entities;
 using TCC.Payment.Data.Enums;
 using TCC.Payment.Data.Interfaces;
 using TCC.Payment.Data.Repositories;
 using TCC.Payment.Integration.Biometric;
+using TCC.Payment.Integration.Config;
 using TCC.Payment.Integration.Interfaces;
 using ILogger = Serilog.ILogger;
 
@@ -20,6 +25,7 @@ namespace TCC.Biometric.Payment.Controllers
     [ApiController]
     public class TransactionController : Controller
     {
+
         private readonly ITransactionRepository _transactionRepository;
         private readonly IBiometricVerificationRepository _biometricVerificationRepository;
         private readonly ICustomerRepository _customerRepository;
@@ -94,6 +100,7 @@ namespace TCC.Biometric.Payment.Controllers
 
         }
 
+     
         [Route("getbycustomer")]
         [HttpGet]
         //[OpenApiTags("OnboardingTransaction")]  
@@ -250,7 +257,7 @@ namespace TCC.Biometric.Payment.Controllers
 
             var customer = _customerRepository.GetByID(request.customer_ID);
 
-            var verification = _alpetaServer.GetCurrentUserBiometric(customer.mobile).Result;  //need to change to user id
+            var verification = _alpetaServer.GetCurrentUserBiometric(customer.TerminalUserId.ToString()).Result;  //need to change to user id
 
             if (verification.AuthLogList.IsNullOrEmpty())
             {

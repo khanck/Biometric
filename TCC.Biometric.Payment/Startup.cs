@@ -17,7 +17,6 @@ using ILogger = Serilog.ILogger;
 using TCC.Payment.Integration.Config;
 using TCC.Payment.Integration.Interfaces;
 using TCC.Payment.Integration.Biometric;
-using System.Configuration;
 using TCC.Biometric.Payment.Config;
 
 namespace TCC.Biometric.Payment
@@ -43,8 +42,9 @@ namespace TCC.Biometric.Payment
             if (_configuration.GetConnectionString("ConnecetType") == "Sqlserver")
             {
                 services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(_configuration.GetConnectionString("SqlConnecet"),
-                optionsBuilder => optionsBuilder.MigrationsAssembly("TCC.Payment.Migrations.SqlServer"))
+               // options.UseSqlServer(_configuration.GetConnectionString("SqlConnecet"),
+               options.UseInMemoryDatabase("InMemoryDb")
+               // optionsBuilder => optionsBuilder.MigrationsAssembly("TCC.Payment.Migrations.SqlServer"))
                );
             }        
             services.AddControllers();
@@ -72,7 +72,7 @@ namespace TCC.Biometric.Payment
 
 
 
-            services.Configure<AuthConfiguration>(_configuration.GetSection("AuthConfiguration"));
+            
             services.Configure<AlpetaConfiguration>(_configuration.GetSection("AlpetaConfiguration"));
             //services
             // .AddCore()

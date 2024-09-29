@@ -34,6 +34,7 @@ namespace TCC.Payment.Data.Entities
         public CustomerStatus status { get; set; }
         public Boolean? isEmailVerified { get; set; } = false;
         public Boolean? isMobileVerified { get; set; } = false;
+        public int TerminalUserId { get; set; }
 
     }
 }
