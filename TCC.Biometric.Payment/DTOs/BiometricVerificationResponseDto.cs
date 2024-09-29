@@ -10,7 +10,8 @@ namespace TCC.Biometric.Payment.DTOs
         public string biometricData { get; init; }
         public DateTime createdDate { get; set; }
         [StringLength(1000)]
-        public string verificationResponse { get; set; }
+        public string verificationResponse { get; init; }
+        public string verificationID { get; init; }
         public VerificationStatus verificationStatus { get; set; }
 
     }

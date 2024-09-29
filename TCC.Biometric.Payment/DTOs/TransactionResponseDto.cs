@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+
 using TCC.Payment.Data.Enums;
 
 namespace TCC.Biometric.Payment.DTOs
@@ -20,5 +21,7 @@ namespace TCC.Biometric.Payment.DTOs
         public BiometricVerificationResponseDto biometricVerification { get; set; }
         public PaymentCardResponseDto paymentCard { get; set; }
         public AccountResponseDto account { get; set; }
+
+        public  CustomerResponseDto customer { get; set; }
     }
 }
