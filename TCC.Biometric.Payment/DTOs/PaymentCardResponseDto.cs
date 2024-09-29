@@ -17,7 +17,7 @@ namespace TCC.Biometric.Payment.DTOs
         [StringLength(100)]
         public string expiryYear { get; init; } = null!;
         [StringLength(100)]
-        public string cvv { get; init; }
+        //public string cvv { get; init; }
         public DateTime createdDate { get; set; }
         public DateTime? updatedDate { get; set; }
         public CardStatus status { get; set; }

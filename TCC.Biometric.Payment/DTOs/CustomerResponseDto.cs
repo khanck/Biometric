@@ -14,9 +14,9 @@ namespace TCC.Biometric.Payment.DTOs
 
         public string mobile { get; init; } 
        
-        public string? password { get; init; }
+        //public string? password { get; init; }
 
-        public string pin { get; init; } 
+        //public string pin { get; init; } 
 
         public CustomerStatus status { get; set; }
 

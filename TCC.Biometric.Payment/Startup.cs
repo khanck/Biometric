@@ -89,7 +89,7 @@ namespace TCC.Biometric.Payment
             services.AddScoped<IBusinessRepository,BusinessRepository >();
             services.AddScoped<IPaymentCardRepository,PaymentCardRepository >();
             services.AddScoped<ITransactionRepository,TransactionRepository >();
-            // services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
             
             services.AddScoped<IAlpetaServer, AlpetaServer>();
 

@@ -16,7 +16,7 @@ namespace TCC.Payment.Data.Entities
         [ForeignKey("biometricVerification")]
         public Guid biometricVerification_ID { get; set; } = default!;
         [ForeignKey("paymentCard")]
-        public Guid paymentCard_ID { get; init; } = default!;
+        public Guid paymentCard_ID { get; set; } = default!;
         [ForeignKey("account")]
         public Guid account_ID { get; init; } = default!;
         public TransactionTypes TransactionType { get; set; }
