@@ -14,9 +14,9 @@ namespace TCC.Payment.Data.Repositories
         public PaymentCardRepository(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
-        public async Task<PaymentCard> GetByCustomerID(string customerID)
+        public async Task<PaymentCard> GetByCustomerID(int customerID)
         {
-            return await DbSet.Where(o => o.customer.mobile == customerID.ToString()).FirstOrDefaultAsync();
+            return await DbSet.Where(o => o.customer.TerminalUserId == customerID).FirstOrDefaultAsync();
         }
 
     }

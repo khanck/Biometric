@@ -104,9 +104,11 @@ namespace TCC.Biometric.Payment
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                //app.UseSwagger();
+                //app.UseSwaggerUI();
             }
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.ExceptionHandler(_logger);
             app.UseHttpsRedirection();
