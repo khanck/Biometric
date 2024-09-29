@@ -64,20 +64,6 @@ namespace TCC.Biometric.Payment.Controllers
            //    return Unauthorized();
             var response = new ResultDto<TransactionResponseDto>();
 
-            //var data = _alpetaServer.Login();
-            var res = _alpetaServer.GetCurrentUserBiometric().Result;
-
-            if (res.AuthLogList.IsNullOrEmpty())
-            {
-                response.error = new ErrorDto();
-                response.error.errorCode = "BP_030";
-                response.error.errorMessage = "Biometric not verified";
-                response.error.errorDetails = " Please do Biometric Verification";
-
-                return NotFound(response);
-            }
-            var details = _alpetaServer.GetVerificationDetails(res.AuthLogList.FirstOrDefault().IndexKey);
-
             var transaction = _transactionRepository.GetByID(Id);
 
 
@@ -92,6 +78,13 @@ namespace TCC.Biometric.Payment.Controllers
             }
 
             response.data = _autoMapper.Map<TransactionResponseDto>(transaction);
+
+            //var customer = _customerRepository.GetByCustomerID(Convert.ToInt32(verificationDetail.AuthLogDetail.UserID)).Result;
+
+            //response.data.customer = _autoMapper.Map<CustomerResponseDto>(customer);
+            //response.data.paymentCard = _autoMapper.Map<PaymentCardResponseDto>(paymentCard);
+            //response.data.biometricVerification = _autoMapper.Map<BiometricVerificationResponseDto>(biometricVerification);
+
 
 
             response.success = true;
@@ -207,7 +200,7 @@ namespace TCC.Biometric.Payment.Controllers
                 return NotFound(response);
             }
 
-            var paymentCard=  _paymentCardRepository.GetByCustomerID(verificationDetail.AuthLogDetail.UserID).Result;
+            var paymentCard=  _paymentCardRepository.GetByCustomerID(Convert.ToInt32(verificationDetail.AuthLogDetail.UserID)).Result;
 
             if (paymentCard == null)
             {
@@ -237,6 +230,13 @@ namespace TCC.Biometric.Payment.Controllers
             _transactionRepository.SaveChanges();
 
             response.data = _autoMapper.Map<TransactionResponseDto>(result.Entity);
+
+            var customer = _customerRepository.GetByCustomerID(Convert.ToInt32(verificationDetail.AuthLogDetail.UserID)).Result;
+            
+            response.data.customer = _autoMapper.Map<CustomerResponseDto>(customer);
+            response.data.paymentCard = _autoMapper.Map<PaymentCardResponseDto>(paymentCard);
+            response.data.biometricVerification = _autoMapper.Map<BiometricVerificationResponseDto>(biometricVerification);
+
             response.success = true;
 
             return Ok(response);
@@ -281,7 +281,7 @@ namespace TCC.Biometric.Payment.Controllers
                 return NotFound(response);
             }
 
-            var paymentCard = _paymentCardRepository.GetByCustomerID(verificationDetail.AuthLogDetail.UserID).Result;
+            var paymentCard = _paymentCardRepository.GetByCustomerID(Convert.ToInt32(verificationDetail.AuthLogDetail.UserID)).Result;
 
             if (paymentCard == null)
             {
@@ -311,6 +311,11 @@ namespace TCC.Biometric.Payment.Controllers
             _transactionRepository.SaveChanges();
 
             response.data = _autoMapper.Map<TransactionResponseDto>(result.Entity);
+
+            response.data.customer= _autoMapper.Map<CustomerResponseDto>(customer);
+            response.data.paymentCard = _autoMapper.Map<PaymentCardResponseDto>(paymentCard);
+            response.data.biometricVerification = _autoMapper.Map<BiometricVerificationResponseDto>(biometricVerification);
+
             response.success = true;
 
             return Ok(response);
