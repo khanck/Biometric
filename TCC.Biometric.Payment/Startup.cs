@@ -112,13 +112,18 @@ namespace TCC.Biometric.Payment
 
             app.ExceptionHandler(_logger);
             app.UseHttpsRedirection();
+            app.UseCors(builder => builder
+   .AllowAnyOrigin()
+   .AllowAnyMethod()
+   .AllowAnyHeader()
+    );
             app.UseAuthorization();
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
             app.UseAuthorization();
-
+           
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
