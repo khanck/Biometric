@@ -20,6 +20,7 @@ namespace TCC.Biometric.Payment.Controllers
     {
         private readonly ICustomerRepository _customerRepository;
         private readonly IBiometricRepository _biometricRepository;
+        private readonly IPaymentCardRepository _paymentCardRepository;
 
         private readonly IMapper _autoMapper;
         private readonly ILogger _logger;
@@ -27,12 +28,14 @@ namespace TCC.Biometric.Payment.Controllers
 
         public CustomerController(ICustomerRepository customerRepository,
             IBiometricRepository biometricRepository,
+            IPaymentCardRepository paymentCardRepository,
             IMapper autoMapper, IAuthenticationService authenticationService,
             ILogger logger,
             IAlpetaServer alpetaServe)
         {
             _customerRepository = customerRepository;
             _biometricRepository = biometricRepository;
+            _paymentCardRepository = paymentCardRepository;
             _autoMapper = autoMapper;
             _logger = logger;
             _alpetaServer = alpetaServe;
@@ -112,6 +115,14 @@ namespace TCC.Biometric.Payment.Controllers
             _biometricRepository.SaveChanges();
 
 
+            // add dummy card will remove soon after mobile app 
+
+            _paymentCardRepository.Add(new PaymentCard() {customer_ID= customer.Id,nameOnCard=customer.firstName,
+                                cardNumber = (Random.Shared.Next(2, 1000000000)).ToString(),cardType="VISA",expiryYear="2026",
+                expiryMonth="9",cvv="099",status= CardStatus.active});
+            _paymentCardRepository.SaveChanges();
+
+
             // var customer = _autoMapper.Map<Customer>(request);
             //customer.Id = biometricResult.Entity.Id;
             customer.createdDate = DateTime.Now;
@@ -161,6 +172,9 @@ namespace TCC.Biometric.Payment.Controllers
                 UserId = customer.TerminalUserId,
                 DownloadInfo = downloadInfo
             });
+
+            response.data = _autoMapper.Map<CustomerResponseDto>(customer);
+            response.success = true;
 
             return Ok(response);
 

@@ -177,6 +177,15 @@ namespace TCC.Biometric.Payment.Controllers
 
 
             var verification = _alpetaServer.GetCurrentUserBiometric().Result;
+            for (int i = 0; i < 3; i++)
+            {
+                if (verification.AuthLogList.IsNullOrEmpty())
+                {
+                    await Task.Delay(2500);
+                    verification = _alpetaServer.GetCurrentUserBiometric().Result;
+                }else
+                    break;
+            }
 
             if (verification.AuthLogList.IsNullOrEmpty())
             {
@@ -200,13 +209,25 @@ namespace TCC.Biometric.Payment.Controllers
                 return NotFound(response);
             }
 
+            var customer = _customerRepository.GetByCustomerID(Convert.ToInt32(verificationDetail.AuthLogDetail.UserID)).Result;
+
+            if (customer == null)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_030";
+                response.error.errorMessage = "customer not found";
+                //response.error.errorDetails = " Please do Biometric Verification";
+
+                return NotFound(response);
+
+            }
             var paymentCard=  _paymentCardRepository.GetByCustomerID(Convert.ToInt32(verificationDetail.AuthLogDetail.UserID)).Result;
 
             if (paymentCard == null)
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_030";
-                response.error.errorMessage = "customer not found";
+                response.error.errorMessage = "payment Card not found";
                 //response.error.errorDetails = " Please do Biometric Verification";
 
                 return NotFound(response);
@@ -231,7 +252,7 @@ namespace TCC.Biometric.Payment.Controllers
 
             response.data = _autoMapper.Map<TransactionResponseDto>(result.Entity);
 
-            var customer = _customerRepository.GetByCustomerID(Convert.ToInt32(verificationDetail.AuthLogDetail.UserID)).Result;
+            //var customer = _customerRepository.GetByCustomerID(Convert.ToInt32(verificationDetail.AuthLogDetail.UserID)).Result;
             
             response.data.customer = _autoMapper.Map<CustomerResponseDto>(customer);
             response.data.paymentCard = _autoMapper.Map<PaymentCardResponseDto>(paymentCard);
