@@ -86,9 +86,11 @@ namespace TCC.Biometric.Payment.Controllers
         [Produces(typeof(ResultDto<CustomerResponseDto>))]
         public async Task<IActionResult> create(CustomerRequestDto request, CancellationToken cancellationToken = default)
         {
-            int userIdTemp = 200;
+
             //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
             //    return Unauthorized();
+
+            _logger.Information("request image " + request.biometric.FirstOrDefault().biometricData);
             await _alpetaServer.Login();
             var response = new ResultDto<CustomerResponseDto>();
 
@@ -104,7 +106,8 @@ namespace TCC.Biometric.Payment.Controllers
             biometric.customer_ID = customer.Id;
             biometric.createdDate = DateTime.Now;
             biometric.status = BiometricStatus.pending;
-            biometric.abisReferenceID = "abis ID";
+            biometric.abisReferenceID = customer.TerminalUserId.ToString();
+            
             var biometricResult = (await _biometricRepository.AddAsync(biometric));
             _biometricRepository.SaveChanges();
           
@@ -114,9 +117,9 @@ namespace TCC.Biometric.Payment.Controllers
             customer.createdDate = DateTime.Now;
             customer.status = CustomerStatus.pending;
             CreateUserRequestDTO createUserRequestDTO = new CreateUserRequestDTO();
-            createUserRequestDTO.UpdateUserID(userIdTemp);
-            createUserRequestDTO.UserInfo.ID = userIdTemp.ToString();
-            createUserRequestDTO.UserInfo.UniqueID = userIdTemp.ToString();
+            createUserRequestDTO.UpdateUserID(customer.TerminalUserId);
+            createUserRequestDTO.UserInfo.ID = customer.TerminalUserId.ToString();
+            createUserRequestDTO.UserInfo.UniqueID = customer.TerminalUserId.ToString();
             createUserRequestDTO.UserInfo.Email = customer.email;
             createUserRequestDTO.UserInfo.Name = customer.firstName+' '+customer.lastName;
             createUserRequestDTO.UserInfo.Phone = customer.mobile;
@@ -125,15 +128,15 @@ namespace TCC.Biometric.Payment.Controllers
            
             UserFaceInfo userFaceInfo = new UserFaceInfo();
             UserFaceWTInfo userFaceWTInfo = new UserFaceWTInfo();
-            userFaceWTInfo.UserID = userIdTemp;
+            userFaceWTInfo.UserID = customer.TerminalUserId;
             userFaceWTInfo.TemplateData = request.biometric.FirstOrDefault().biometricData;
             userFaceWTInfo.TemplateType = 1;
             userFaceWTInfo.TemplateSize = GetPictureSizeInKB(userFaceWTInfo.TemplateData);
            
 
 
-            userFaceInfo.UserID = userIdTemp;
-            userFaceInfo.TemplateData = biometric.biometricData;
+            userFaceInfo.UserID = customer.TerminalUserId;
+            userFaceInfo.TemplateData = request.biometric.FirstOrDefault().biometricData;
             userFaceInfo.TemplateSize = biometric.biometricData.Length;
            // createUserRequestDTO.UserFaceInfo.Add(userFaceInfo);
             createUserRequestDTO.UserFaceWTInfo.Add(userFaceWTInfo);

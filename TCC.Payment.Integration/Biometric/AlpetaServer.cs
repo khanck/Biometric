@@ -318,7 +318,8 @@ namespace TCC.Payment.Integration.Biometric
                         if (response.IsSuccessStatusCode)
                         {
                             var str = response.Content.ReadAsStringAsync();
-                           _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
+
+                           _logger.Information(" Create User in apleta server : response :{0}", str);
                         }
                         else
                         {
@@ -366,7 +367,7 @@ namespace TCC.Payment.Integration.Biometric
                     if (response.IsSuccessStatusCode)
                     {
                         var str = response.Content.ReadAsStringAsync();
-                        _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
+                        _logger.Information(" UpdateUserPicture:   response :{0}", str);
                     }
                     else
                     {
@@ -412,7 +413,7 @@ namespace TCC.Payment.Integration.Biometric
                     if (response.IsSuccessStatusCode)
                     {
                         var str = response.Content.ReadAsStringAsync();
-                        _logger.Information(" Authorize: Success  transaction ID :{0}"/*, result.transId*/);
+                        _logger.Information(" SaveUserToTerminal:   response :{0}", str);
                     }
                     else
                     {
