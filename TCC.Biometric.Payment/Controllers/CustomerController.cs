@@ -107,12 +107,12 @@ namespace TCC.Biometric.Payment.Controllers
             biometric.createdDate = DateTime.Now;
             biometric.status = BiometricStatus.pending;
             biometric.abisReferenceID = customer.TerminalUserId.ToString();
-            
+
             var biometricResult = (await _biometricRepository.AddAsync(biometric));
             _biometricRepository.SaveChanges();
-          
 
-           // var customer = _autoMapper.Map<Customer>(request);
+
+            // var customer = _autoMapper.Map<Customer>(request);
             //customer.Id = biometricResult.Entity.Id;
             customer.createdDate = DateTime.Now;
             customer.status = CustomerStatus.pending;
@@ -121,27 +121,37 @@ namespace TCC.Biometric.Payment.Controllers
             createUserRequestDTO.UserInfo.ID = customer.TerminalUserId.ToString();
             createUserRequestDTO.UserInfo.UniqueID = customer.TerminalUserId.ToString();
             createUserRequestDTO.UserInfo.Email = customer.email;
-            createUserRequestDTO.UserInfo.Name = customer.firstName+' '+customer.lastName;
+            createUserRequestDTO.UserInfo.Name = customer.firstName + ' ' + customer.lastName;
             createUserRequestDTO.UserInfo.Phone = customer.mobile;
             createUserRequestDTO.UserInfo.Password = customer.pin;
             createUserRequestDTO.UserInfo.LoginPW = customer.password;
-           
+
             UserFaceInfo userFaceInfo = new UserFaceInfo();
             UserFaceWTInfo userFaceWTInfo = new UserFaceWTInfo();
             userFaceWTInfo.UserID = customer.TerminalUserId;
             userFaceWTInfo.TemplateData = request.biometric.FirstOrDefault().biometricData;
             userFaceWTInfo.TemplateType = 1;
             userFaceWTInfo.TemplateSize = GetPictureSizeInKB(userFaceWTInfo.TemplateData);
-           
+
 
 
             userFaceInfo.UserID = customer.TerminalUserId;
             userFaceInfo.TemplateData = request.biometric.FirstOrDefault().biometricData;
             userFaceInfo.TemplateSize = biometric.biometricData.Length;
-           // createUserRequestDTO.UserFaceInfo.Add(userFaceInfo);
+            // createUserRequestDTO.UserFaceInfo.Add(userFaceInfo);
             createUserRequestDTO.UserFaceWTInfo.Add(userFaceWTInfo);
-            
-            await _alpetaServer.CreateUser(createUserRequestDTO);
+
+            var user = _alpetaServer.CreateUser(createUserRequestDTO).Result;
+            if (user == null || user.Result.ResultCode != "0")
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_50";
+                response.error.errorMessage = "Error in biometric registry";
+                response.error.errorDetails = user.ToString();
+
+                return Conflict(response);
+            }
+
             DownloadInfo downloadInfo = new DownloadInfo();
             downloadInfo.Offset = 1;
             downloadInfo.Total = 1;
@@ -150,7 +160,76 @@ namespace TCC.Biometric.Payment.Controllers
                 TerminalId = 1,
                 UserId = customer.TerminalUserId,
                 DownloadInfo = downloadInfo
-            }) ;
+            });
+
+            return Ok(response);
+
+        }
+
+        [Route("push-user-biometric")]
+        [HttpPost]
+        [ProducesResponseType(typeof(ResultDto<CustomerResponseDto>), StatusCodes.Status200OK)]
+        [Produces(typeof(ResultDto<CustomerResponseDto>))]
+        public async Task<IActionResult> PushUserBiometric(PushUserBiometricRequestDto request, CancellationToken cancellationToken = default)
+        {
+
+            //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
+            //    return Unauthorized();
+
+           
+ 
+            var response = new ResultDto<CustomerResponseDto>();
+
+            var customer = _customerRepository.GetByID(request.customer_ID);
+            var biometric = _biometricRepository.GetByCustomerID(request.customer_ID).Result;
+
+            // var customer = _autoMapper.Map<Customer>(request);
+            //customer.Id = biometricResult.Entity.Id;     
+            CreateUserRequestDTO createUserRequestDTO = new CreateUserRequestDTO();
+            createUserRequestDTO.UpdateUserID(customer.TerminalUserId);
+            createUserRequestDTO.UserInfo.ID = customer.TerminalUserId.ToString();
+            createUserRequestDTO.UserInfo.UniqueID = customer.TerminalUserId.ToString();
+            createUserRequestDTO.UserInfo.Email = customer.email;
+            createUserRequestDTO.UserInfo.Name = customer.firstName + ' ' + customer.lastName;
+            createUserRequestDTO.UserInfo.Phone = customer.mobile;
+            createUserRequestDTO.UserInfo.Password = customer.pin;
+            createUserRequestDTO.UserInfo.LoginPW = customer.password;
+
+            UserFaceInfo userFaceInfo = new UserFaceInfo();
+            UserFaceWTInfo userFaceWTInfo = new UserFaceWTInfo();
+            userFaceWTInfo.UserID = customer.TerminalUserId;
+            userFaceWTInfo.TemplateData = biometric.biometricData;
+            userFaceWTInfo.TemplateType = 1;
+            userFaceWTInfo.TemplateSize = GetPictureSizeInKB(userFaceWTInfo.TemplateData);
+
+
+
+            userFaceInfo.UserID = customer.TerminalUserId;
+            userFaceInfo.TemplateData = biometric.biometricData;
+            userFaceInfo.TemplateSize = biometric.biometricData.Length;
+            // createUserRequestDTO.UserFaceInfo.Add(userFaceInfo);
+            createUserRequestDTO.UserFaceWTInfo.Add(userFaceWTInfo);
+
+            var user = _alpetaServer.CreateUser(createUserRequestDTO).Result;
+            if (user == null || user.Result.ResultCode != "0")
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_50";
+                response.error.errorMessage = "Error in biometric registry";
+                response.error.errorDetails = user.ToString();
+
+                return Conflict(response);
+            }
+
+            DownloadInfo downloadInfo = new DownloadInfo();
+            downloadInfo.Offset = 1;
+            downloadInfo.Total = 1;
+            await _alpetaServer.SaveUserToTerminal(new SaveUserToTerminalDto
+            {
+                TerminalId = request.TerminalId,
+                UserId = customer.TerminalUserId,
+                DownloadInfo = downloadInfo
+            });
 
             return Ok(response);
 

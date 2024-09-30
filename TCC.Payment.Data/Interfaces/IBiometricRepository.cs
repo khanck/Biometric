@@ -10,6 +10,7 @@ namespace TCC.Payment.Data.Interfaces
 {
     public interface IBiometricRepository
     {
+        Task<Biometrics> GetByCustomerID(Guid customerID)
         Biometrics GetByID(Guid id);
         IQueryable<Biometrics> GetAllAsQuerable();
         Biometrics Add(Biometrics obj);

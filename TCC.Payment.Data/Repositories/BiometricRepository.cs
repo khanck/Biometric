@@ -14,7 +14,10 @@ namespace TCC.Payment.Data.Repositories
         public BiometricRepository(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
-      
+        public async Task<Biometrics> GetByCustomerID(Guid customerID)
+        {
+            return await DbSet.Where(o => o.customer.Id == customerID).FirstOrDefaultAsync();
+        }
 
     }
 }

@@ -16,9 +16,9 @@ namespace TCC.Payment.Integration.Interfaces
         Task<BiometricAuthentication> GetCurrentUserBiometric(string userID);
         Task<BiometricAuthentication> GetVerificationDetails(Int64 index);
        // Task<AlpetaConfiguration> GetAuthentication(string userId);
-        Task<AlpetaConfiguration> CreateUser(CreateUserRequestDTO userId);
+        Task<CreateUserResult> CreateUser(CreateUserRequestDTO userId);
         Task<AlpetaConfiguration> UpdateUserPicture(UpdateUserPictureReqDTO updateUserPictureReqDTO);
      
-        Task<AlpetaConfiguration> SaveUserToTerminal(SaveUserToTerminalDto saveUserToTerminalDto);
+        Task<Response> SaveUserToTerminal(SaveUserToTerminalDto saveUserToTerminalDto);
     }
 }
