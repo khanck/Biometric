@@ -21,7 +21,7 @@ namespace TCC.Biometric.Payment.DTOs
         public CustomerStatus status { get; set; }
 
 
-        public List<BiometricResponseDto> biometric { get; set; }
+        public List<BiometricResponseDto> biometric { get; set; }=new List<BiometricResponseDto>();
 
     }
 }

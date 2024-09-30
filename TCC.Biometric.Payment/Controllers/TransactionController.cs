@@ -30,6 +30,7 @@ namespace TCC.Biometric.Payment.Controllers
         private readonly IBiometricVerificationRepository _biometricVerificationRepository;
         private readonly ICustomerRepository _customerRepository;
         private readonly IPaymentCardRepository _paymentCardRepository;
+        private readonly IBiometricRepository _biometricRepository;
         private readonly IAlpetaServer _alpetaServer;
 
         private readonly IMapper _autoMapper;
@@ -39,7 +40,8 @@ namespace TCC.Biometric.Payment.Controllers
             IBiometricVerificationRepository biometricVerificationRepository,
             ICustomerRepository customerRepository,
             IPaymentCardRepository paymentCardRepository,
-            IAlpetaServer alpetaServer,
+            IBiometricRepository biometricRepository,
+        IAlpetaServer alpetaServer,
             IMapper autoMapper, IAuthenticationService authenticationService,
             ILogger logger)
         {
@@ -47,6 +49,7 @@ namespace TCC.Biometric.Payment.Controllers
             _biometricVerificationRepository = biometricVerificationRepository;
             _customerRepository = customerRepository;
             _paymentCardRepository = paymentCardRepository;
+            _biometricRepository = biometricRepository;
             _alpetaServer = alpetaServer;
             _autoMapper = autoMapper;
             _logger = logger;
@@ -177,6 +180,7 @@ namespace TCC.Biometric.Payment.Controllers
 
 
             var verification = _alpetaServer.GetCurrentUserBiometric().Result;
+
             for (int i = 0; i < 3; i++)
             {
                 if (verification.AuthLogList.IsNullOrEmpty())
@@ -252,11 +256,12 @@ namespace TCC.Biometric.Payment.Controllers
 
             response.data = _autoMapper.Map<TransactionResponseDto>(result.Entity);
 
-            //var customer = _customerRepository.GetByCustomerID(Convert.ToInt32(verificationDetail.AuthLogDetail.UserID)).Result;
+            //var biometric = _biometricRepository.GetByCustomerID(customer.Id).Result;
             
             response.data.customer = _autoMapper.Map<CustomerResponseDto>(customer);
-            response.data.paymentCard = _autoMapper.Map<PaymentCardResponseDto>(paymentCard);
+            //response.data.paymentCard = _autoMapper.Map<PaymentCardResponseDto>(paymentCard);
             response.data.biometricVerification = _autoMapper.Map<BiometricVerificationResponseDto>(biometricVerification);
+            //response.data.customer.biometric.Add( _autoMapper.Map<BiometricResponseDto>(biometric));
 
             response.success = true;
 
@@ -335,7 +340,7 @@ namespace TCC.Biometric.Payment.Controllers
 
             response.data.customer= _autoMapper.Map<CustomerResponseDto>(customer);
             response.data.paymentCard = _autoMapper.Map<PaymentCardResponseDto>(paymentCard);
-            response.data.biometricVerification = _autoMapper.Map<BiometricVerificationResponseDto>(biometricVerification);
+            //response.data.biometricVerification = _autoMapper.Map<BiometricVerificationResponseDto>(biometricVerification);
 
             response.success = true;
 
