@@ -10,6 +10,7 @@ namespace TCC.Payment.Data.Interfaces
 {
     public interface IBusinessRepository
     {
+        Task<Business> Login(string email, string password);
         Business GetByID(Guid id);
         IQueryable<Business> GetAllAsQuerable();
         Business Add(Business obj);

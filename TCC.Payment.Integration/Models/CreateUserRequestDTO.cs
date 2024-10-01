@@ -5,12 +5,12 @@
         public string ID { get; set; } = "9999";
         public string UniqueID { get; set; } = "9999";
         public string Name { get; set; } = "User9999";
-        public List<int> AuthInfo { get; set; } = new List<int> { 3, 9,0, 0, 0, 0, 0, 0 };
+        public List<int> AuthInfo { get; set; } = new List<int> { 3, 9,0, 0, 0, 0, 0, 2 };
         public int Privilege { get; set; } = 2;
-        public string CreateDate { get; set; } = "2024-04-11 01:30:02";
+        public string CreateDate { get; set; } = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
         public int UsePeriodFlag { get; set; } = 0;
-        public string RegistDate { get; set; } = "2024-04-11 01:30:02";
-        public string ExpireDate { get; set; } = "2027-04-11 01:30:02";
+        public string RegistDate { get; set; } = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+        public string ExpireDate { get; set; } = DateTime.Now.AddYears(1).ToString("yyyy-MM-dd hh:mm:ss");
         public string Password { get; set; } = "1111";
         public int GroupCode { get; set; } = 0;
         public int AccessGroupCode { get; set; } = 0;

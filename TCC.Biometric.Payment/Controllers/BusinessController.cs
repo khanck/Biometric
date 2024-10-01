@@ -102,5 +102,36 @@ namespace TCC.Biometric.Payment.Controllers
 
         }
 
+        [Route("login")]
+        [HttpPost]
+        [ProducesResponseType(typeof(ResultDto<BusinessResponseDto>), StatusCodes.Status200OK)]
+        [Produces(typeof(ResultDto<BusinessResponseDto>))]
+        public async Task<IActionResult> Login(LoginRequestDto request, CancellationToken cancellationToken = default)
+        {
+            //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
+            //    return Unauthorized();
+
+            var response = new ResultDto<BusinessResponseDto>();
+
+            var business = _businessRepository.Login(request.email, request.password).Result;
+
+
+            if (business == null)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_001";
+                response.error.errorMessage = "Invalid user";
+                //response.error.errorDetails = "digital ID Customer Not Found";
+
+                return Conflict(response);
+            }
+
+            response.data = _autoMapper.Map<BusinessResponseDto>(business);
+
+
+            response.success = true;
+            return Ok(response);
+        }
+
     }
 }

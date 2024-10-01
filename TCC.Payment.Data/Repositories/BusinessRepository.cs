@@ -14,7 +14,10 @@ namespace TCC.Payment.Data.Repositories
         public BusinessRepository(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
-      
+        public async Task<Business> Login(string email, string password)
+        {
+            return await DbSet.Where(o => o.email.ToLower() == email.ToLower() & o.password == password.Trim()).FirstOrDefaultAsync();
+        }
 
     }
 }

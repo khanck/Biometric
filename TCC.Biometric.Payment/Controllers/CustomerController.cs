@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Newtonsoft.Json;
 using TCC.Biometric.Payment.DTOs;
 using TCC.Payment.Data.Entities;
 using TCC.Payment.Data.Enums;
@@ -158,7 +159,7 @@ namespace TCC.Biometric.Payment.Controllers
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_50";
                 response.error.errorMessage = "Error in biometric registry";
-                response.error.errorDetails = user.ToString();
+                response.error.errorDetails = JsonConvert.SerializeObject(user);
 
                 return Conflict(response);
             }
