@@ -10,6 +10,7 @@ namespace TCC.Payment.Data.Interfaces
 {
     public interface IAccountRepository
     {
+        Task<Account> GetByBusinessID(Guid businessID);
         Account GetByID(Guid id);
         IQueryable<Account> GetAllAsQuerable();
         Account Add(Account obj);

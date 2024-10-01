@@ -14,7 +14,10 @@ namespace TCC.Payment.Data.Repositories
         public AccountRepository(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
-      
+        public async Task<Account> GetByBusinessID(Guid businessID)
+        {
+            return await DbSet.Where(o => o.business_ID == businessID).FirstOrDefaultAsync();
+        }
 
     }
 }

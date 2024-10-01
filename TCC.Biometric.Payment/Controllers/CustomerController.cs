@@ -292,7 +292,8 @@ namespace TCC.Biometric.Payment.Controllers
             }
 
             response.data = _autoMapper.Map<CustomerResponseDto>(customer);
-
+            var biometric = _biometricRepository.GetByCustomerID(customer.Id).Result;
+            response.data.biometric.Add( _autoMapper.Map<BiometricResponseDto>(biometric));
 
             response.success = true;
             return Ok(response);

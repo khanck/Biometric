@@ -60,6 +60,8 @@ namespace TCC.Biometric.Payment.Controllers
 
             response.data = _autoMapper.Map<BusinessResponseDto>(business);
 
+            var account = _accountRepository.GetByBusinessID(business.Id).Result;
+            response.data.account = _autoMapper.Map<AccountResponseDto>(account);
 
             response.success = true;
             return Ok(response);
@@ -125,9 +127,12 @@ namespace TCC.Biometric.Payment.Controllers
 
                 return Conflict(response);
             }
+           
 
             response.data = _autoMapper.Map<BusinessResponseDto>(business);
 
+            var account = _accountRepository.GetByBusinessID(business.Id).Result;
+            response.data.account= _autoMapper.Map<AccountResponseDto>(account);
 
             response.success = true;
             return Ok(response);
