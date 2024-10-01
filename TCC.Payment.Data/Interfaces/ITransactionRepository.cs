@@ -23,6 +23,7 @@ namespace TCC.Payment.Data.Interfaces
         Task<EntityEntry<Transaction>> AddAsync(Transaction obj);
 
         Task<List<Transaction>> GetAllByCustomerID(Guid customerID);
+        Task<List<Transaction>> GetAllByBusinessID(Guid businessID);
 
     }
 }

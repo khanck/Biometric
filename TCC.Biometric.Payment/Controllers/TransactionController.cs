@@ -31,6 +31,8 @@ namespace TCC.Biometric.Payment.Controllers
         private readonly ICustomerRepository _customerRepository;
         private readonly IPaymentCardRepository _paymentCardRepository;
         private readonly IBiometricRepository _biometricRepository;
+        private readonly IAccountRepository _accountRepository;
+
         private readonly IAlpetaServer _alpetaServer;
 
         private readonly IMapper _autoMapper;
@@ -41,6 +43,7 @@ namespace TCC.Biometric.Payment.Controllers
             ICustomerRepository customerRepository,
             IPaymentCardRepository paymentCardRepository,
             IBiometricRepository biometricRepository,
+            IAccountRepository accountRepository,
         IAlpetaServer alpetaServer,
             IMapper autoMapper, IAuthenticationService authenticationService,
             ILogger logger)
@@ -50,6 +53,7 @@ namespace TCC.Biometric.Payment.Controllers
             _customerRepository = customerRepository;
             _paymentCardRepository = paymentCardRepository;
             _biometricRepository = biometricRepository;
+            _accountRepository = accountRepository;
             _alpetaServer = alpetaServer;
             _autoMapper = autoMapper;
             _logger = logger;
@@ -127,8 +131,40 @@ namespace TCC.Biometric.Payment.Controllers
             response.success = true;
             return Ok(response);
 
+        }
+
+        [Route("getbybusiness")]
+        [HttpGet]
+        //[OpenApiTags("OnboardingTransaction")]  
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<List<TransactionResponseDto>>))]
+        [Produces(typeof(ResultDto<List<TransactionResponseDto>>))]
+        public async Task<IActionResult> GetByBusiness(Guid Id, CancellationToken cancellationToken = default)
+        {  //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
+            //    return Unauthorized();
+
+            var response = new ResultDto<List<TransactionResponseDto>>();
+
+            var result = _transactionRepository.GetAllByBusinessID(Id).Result;
+
+
+            if (result == null)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_001";
+                response.error.errorMessage = "Transactions Not Found";
+                //response.error.errorDetails = "digital ID Transaction Not Found";
+
+                return Conflict(response);
+            }
+
+            response.data = _autoMapper.Map<List<TransactionResponseDto>>(result);         
+          
+            response.success = true;
+            return Ok(response);
 
         }
+
+
 
         [Route("create")]
         [HttpPost]

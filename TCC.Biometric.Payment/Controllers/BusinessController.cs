@@ -90,7 +90,7 @@ namespace TCC.Biometric.Payment.Controllers
 
 
             var account = _autoMapper.Map<Account>(request.account);
-        //    account.business_ID = business.Id;
+            account.business_ID = business.Id;
             account.createdDate = DateTime.Now;
             account.status = AccountStatus.pending;
 
