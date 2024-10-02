@@ -231,7 +231,7 @@ namespace TCC.Biometric.Payment.Controllers
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_50";
                 response.error.errorMessage = "Error in biometric registry";
-                response.error.errorDetails = user.ToString();
+                response.error.errorDetails = JsonConvert.SerializeObject(user);
 
                 return Conflict(response);
             }
@@ -250,12 +250,62 @@ namespace TCC.Biometric.Payment.Controllers
 
         }
 
+
+
+        [Route("push-user-to-terminal")]
+        [HttpPost]
+        [ProducesResponseType(typeof(ResultDto<CustomerResponseDto>), StatusCodes.Status200OK)]
+        [Produces(typeof(ResultDto<CustomerResponseDto>))]
+        public async Task<IActionResult> PushUserToTerminal(PushUserToTerminalRequestDto request, CancellationToken cancellationToken = default)
+        {
+
+            var response = new ResultDto<CustomerResponseDto>();
+
+            var customer = _customerRepository.GetByID(request.customer_ID);
+
+
+            if (customer == null)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_001";
+                response.error.errorMessage = "Customer Not Found";
+                //response.error.errorDetails = "digital ID Customer Not Found";
+
+                return Conflict(response);
+            }
+
+            DownloadInfo downloadInfo = new DownloadInfo();
+            downloadInfo.Offset = 1;
+            downloadInfo.Total = 1;
+            var result = _alpetaServer.SaveUserToTerminal(new SaveUserToTerminalDto
+            {
+                TerminalId = request.TerminalId,
+                UserId = customer.TerminalUserId,
+                DownloadInfo = downloadInfo
+            }).Result;
+
+            if (result.Result.ResultCode != "0")
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_400";
+                response.error.errorMessage = "Error in Save User To Terminal";
+                response.error.errorDetails = JsonConvert.SerializeObject(result);
+
+                return Conflict(response);
+            }
+            response.data = _autoMapper.Map<CustomerResponseDto>(customer);
+            response.success = true;
+            return Ok(response);
+
+        }
+
+
         [Route("update-user-picture")]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<CustomerResponseDto>))]
         [Produces(typeof(ResultDto<CustomerResponseDto>))]
         public async Task<IActionResult> UpdateUserPicture(UpdateUserPictureReqDTO updateUserPictureReqDTO, CancellationToken cancellationToken = default)
-        {  
+        {
             var response = new ResultDto<UpdateUserPictureReqDTO>();
 
             await _alpetaServer.Login();

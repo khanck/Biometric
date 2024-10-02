@@ -32,6 +32,7 @@ namespace TCC.Biometric.Payment.Controllers
         private readonly IPaymentCardRepository _paymentCardRepository;
         private readonly IBiometricRepository _biometricRepository;
         private readonly IAccountRepository _accountRepository;
+        private readonly IBusinessRepository _businessRepository;
 
         private readonly IAlpetaServer _alpetaServer;
 
@@ -44,6 +45,7 @@ namespace TCC.Biometric.Payment.Controllers
             IPaymentCardRepository paymentCardRepository,
             IBiometricRepository biometricRepository,
             IAccountRepository accountRepository,
+            IBusinessRepository businessRepository,
         IAlpetaServer alpetaServer,
             IMapper autoMapper, IAuthenticationService authenticationService,
             ILogger logger)
@@ -53,6 +55,7 @@ namespace TCC.Biometric.Payment.Controllers
             _customerRepository = customerRepository;
             _paymentCardRepository = paymentCardRepository;
             _biometricRepository = biometricRepository;
+            _businessRepository = businessRepository;
             _accountRepository = accountRepository;
             _alpetaServer = alpetaServer;
             _autoMapper = autoMapper;
@@ -104,13 +107,13 @@ namespace TCC.Biometric.Payment.Controllers
         [Route("getbycustomer")]
         [HttpGet]
         //[OpenApiTags("OnboardingTransaction")]  
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<List<TransactionResponseDto>>))]
-        [Produces(typeof(ResultDto<List<TransactionResponseDto>>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<List<CustomerTransactionResponseDto>>))]
+        [Produces(typeof(ResultDto<List<CustomerTransactionResponseDto>>))]
         public async Task<IActionResult> GetByCustomer(Guid Id, CancellationToken cancellationToken = default)
         {  //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
             //    return Unauthorized();
 
-            var response = new ResultDto<List<TransactionResponseDto>>();
+            var response = new ResultDto<List<CustomerTransactionResponseDto>>();
 
             var result = _transactionRepository.GetAllByCustomerID(Id).Result;
 
@@ -125,7 +128,15 @@ namespace TCC.Biometric.Payment.Controllers
                 return Conflict(response);
             }
 
-            response.data = _autoMapper.Map<List<TransactionResponseDto>>(result);
+
+            var transactions = _autoMapper.Map<List<CustomerTransactionResponseDto>>(result);
+            response.data=new List<CustomerTransactionResponseDto>();
+            foreach (var transaction in transactions)
+            {
+               var account = _autoMapper.Map<AccountResponseDto>(_accountRepository.GetByID(transaction.account_ID));
+                transaction.business = _autoMapper.Map<BusinessResponseDto>(_businessRepository.GetByID(account.business_ID));
+                response.data.Add(transaction);
+            }
 
 
             response.success = true;
