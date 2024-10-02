@@ -16,11 +16,11 @@ namespace TCC.Payment.Data.Repositories
         }
         public async Task<List<Transaction>> GetAllByCustomerID(Guid customerID)
         {
-            return await DbSet.Where(o => o.paymentCard.customer_ID == customerID).ToListAsync();
+            return await DbSet.Where(o => o.paymentCard.customer_ID == customerID).OrderByDescending(o=>o.createdDate).ToListAsync();
         }
         public async Task<List<Transaction>> GetAllByBusinessID(Guid businessID)
         {
-            return await DbSet.Where(o => o.account.business_ID == businessID).ToListAsync();
+            return await DbSet.Where(o => o.account.business_ID == businessID).OrderByDescending(o => o.createdDate).ToListAsync();
         }
 
     }

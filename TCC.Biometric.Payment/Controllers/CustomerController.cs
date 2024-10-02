@@ -118,10 +118,10 @@ namespace TCC.Biometric.Payment.Controllers
 
             // add dummy card will remove soon after mobile app 
 
-            _paymentCardRepository.Add(new PaymentCard() {customer_ID= customer.Id,nameOnCard=customer.firstName,
-                                cardNumber = (Random.Shared.Next(2, 1000000000)).ToString(),cardType="VISA",expiryYear="2026",
-                expiryMonth="9",cvv="099",status= CardStatus.active});
-            _paymentCardRepository.SaveChanges();
+            //_paymentCardRepository.Add(new PaymentCard() {customer_ID= customer.Id,nameOnCard=customer.firstName,
+            //                    cardNumber = (Random.Shared.Next(2, 1000000000)).ToString(),cardType="VISA",expiryYear="2026",
+            //    expiryMonth="9",cvv="099",status= CardStatus.active});
+            //_paymentCardRepository.SaveChanges();
 
 
             // var customer = _autoMapper.Map<Customer>(request);
@@ -292,8 +292,8 @@ namespace TCC.Biometric.Payment.Controllers
             }
 
             response.data = _autoMapper.Map<CustomerResponseDto>(customer);
-            var biometric = _biometricRepository.GetByCustomerID(customer.Id).Result;
-            response.data.biometric.Add( _autoMapper.Map<BiometricResponseDto>(biometric));
+            //var biometric = _biometricRepository.GetByCustomerID(customer.Id).Result;
+            //response.data.biometric.Add( _autoMapper.Map<BiometricResponseDto>(biometric));
 
             response.success = true;
             return Ok(response);
