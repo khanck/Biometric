@@ -11,6 +11,7 @@ namespace TCC.Payment.Data.Interfaces
     public interface IPaymentCardRepository
     {
         Task<PaymentCard> GetByCustomerID(int customerID);
+        Task<PaymentCard> GetByCustomerID(Guid customerID);
         PaymentCard GetByID(Guid id);
         IQueryable<PaymentCard> GetAllAsQuerable();
         PaymentCard Add(PaymentCard obj);

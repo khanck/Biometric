@@ -18,6 +18,7 @@ using TCC.Payment.Integration.Config;
 using TCC.Payment.Integration.Interfaces;
 using TCC.Payment.Integration.Biometric;
 using TCC.Biometric.Payment.Config;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace TCC.Biometric.Payment
 {
@@ -66,21 +67,20 @@ namespace TCC.Biometric.Payment
                 .CreateLogger();
 
             _logger = logger;
-            builder.Logging.ClearProviders();
-            services.AddSingleton(logger);
+            //builder.Logging.ClearProviders();
+            //services.AddSingleton(logger);
             services.AddSerilog(logger);
 
 
 
             
             services.Configure<AlpetaConfiguration>(_configuration.GetSection("AlpetaConfiguration"));
-            //services
-            // .AddCore()
-            // .AddInfrastructure()
-            // .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            services.Configure<InnovatricsConfiguration>(_configuration.GetSection("InnovatricsConfiguration"));
+            services.AddCors()            
+             .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
             // services
- 
+
             //Add services to the container.
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
@@ -92,6 +92,7 @@ namespace TCC.Biometric.Payment
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             
             services.AddScoped<IAlpetaServer, AlpetaServer>();
+            services.AddScoped<IInnovatricsAbis, InnovatricsAbis>();
 
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -117,13 +118,9 @@ namespace TCC.Biometric.Payment
    .AllowAnyMethod()
    .AllowAnyHeader()
     );
-            app.UseAuthorization();
-            app.UseHttpsRedirection();
-
+         
             app.UseRouting();
-
-            app.UseAuthorization();
-           
+            app.UseAuthorization();           
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

@@ -10,6 +10,7 @@ using TCC.Payment.Data.Interfaces;
 using TCC.Payment.Data.Repositories;
 using TCC.Payment.Integration.Interfaces;
 using TCC.Payment.Integration.Models;
+using TCC.Payment.Integration.Models.Innovatrics;
 using ILogger = Serilog.ILogger;
 
 namespace TCC.Biometric.Payment.Controllers
@@ -26,13 +27,15 @@ namespace TCC.Biometric.Payment.Controllers
         private readonly IMapper _autoMapper;
         private readonly ILogger _logger;
         private readonly IAlpetaServer _alpetaServer;
+        private readonly IInnovatricsAbis _innovatricsAbis;
 
         public CustomerController(ICustomerRepository customerRepository,
             IBiometricRepository biometricRepository,
             IPaymentCardRepository paymentCardRepository,
             IMapper autoMapper, IAuthenticationService authenticationService,
             ILogger logger,
-            IAlpetaServer alpetaServe)
+            IAlpetaServer alpetaServe,
+             IInnovatricsAbis innovatricsAbis)
         {
             _customerRepository = customerRepository;
             _biometricRepository = biometricRepository;
@@ -40,6 +43,7 @@ namespace TCC.Biometric.Payment.Controllers
             _autoMapper = autoMapper;
             _logger = logger;
             _alpetaServer = alpetaServe;
+            _innovatricsAbis=innovatricsAbis;
         }
 
         [Route("Health")]
@@ -348,6 +352,72 @@ namespace TCC.Biometric.Payment.Controllers
             response.success = true;
             return Ok(response);
         }
+
+        [Route("push-user-to-abis")]
+        [HttpPost]
+        [ProducesResponseType(typeof(ResultDto<CustomerResponseDto>), StatusCodes.Status200OK)]
+        [Produces(typeof(ResultDto<CustomerResponseDto>))]
+        public async Task<IActionResult> PushUserToAbis(PushUserToAbisRequestDto request, CancellationToken cancellationToken = default)
+        {
+
+            var response = new ResultDto<CustomerResponseDto>();
+
+            var customer = _customerRepository.GetByID(request.customer_ID);
+            
+
+            if (customer == null)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_001";
+                response.error.errorMessage = "Customer Not Found";
+                //response.error.errorDetails = "digital ID Customer Not Found";
+
+                return Conflict(response);
+            }
+            var image = _biometricRepository.GetByCustomerID(request.customer_ID).Result;
+
+            if (image == null)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_001";
+                response.error.errorMessage = "Customer face image Not Found";
+                //response.error.errorDetails = "digital ID Customer Not Found";
+
+                return Conflict(response);
+            }
+
+            AbisEnrollUser person=new AbisEnrollUser();
+           
+            person.enrolledAt=DateTime.Now;
+            person.externalId= customer.Id.ToString();
+            person.enrollAction = new EnrollAction (){ enrollActionType = request.enrollActionType, referenceExternalId= customer.Id.ToString() };
+            person.customDetails = new PersonInfo() { givenNames = customer.firstName, surname = customer.lastName, email = customer.email };
+            person.faceModality = new Modality();
+            person.faceModality.faces = new List<Face>();
+
+            AbisImage faceImage=new AbisImage() { captureDevice="user mobile", dataBytes= image.biometricData};
+            Face face=new Face();
+            face.image= faceImage;
+
+            person.faceModality.faces.Add(face);
+
+            var result = _innovatricsAbis.EnrollPerson(person);
+
+            if (result.Id == 0)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_400";
+                response.error.errorMessage = "Error in Save User To Terminal";
+                response.error.errorDetails = JsonConvert.SerializeObject(result);
+
+                return Conflict(response);
+            }
+            response.data = _autoMapper.Map<CustomerResponseDto>(customer);
+            response.success = true;
+            return Ok(response);
+
+        }
+
         private static int GetPictureSizeInKB(string base64Picture)
         {
             // Remove any data URL prefix (if present), e.g., "data:image/png;base64,"
