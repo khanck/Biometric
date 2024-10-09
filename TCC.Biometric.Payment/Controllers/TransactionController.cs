@@ -413,7 +413,8 @@ namespace TCC.Biometric.Payment.Controllers
             identification.gallery = "default";
             identification.identificationParameters = new IdentificationParameter();
             identification.probe=new Probe();
-            identification.probe.dataBytes= request.biometric.biometricData;
+            identification.probe.faces = new List<AbisImage>();
+            identification.probe.faces.Add( new AbisImage() { dataBytes= request.biometric.biometricData });
 
             var verification = _innovatricsAbis.IdentifyByFace(identification).Result;
 
@@ -456,6 +457,7 @@ namespace TCC.Biometric.Payment.Controllers
             biometricVerification.createdDate = DateTime.Now;
             biometricVerification.verificationStatus = VerificationStatus.pending;
             biometricVerification.verificationResponse = "pending";
+            biometricVerification.verificationID = verification.FirstOrDefault().score.ToString();
             var Verificationresult = (await _biometricVerificationRepository.AddAsync(biometricVerification));
             _biometricVerificationRepository.SaveChanges();
 

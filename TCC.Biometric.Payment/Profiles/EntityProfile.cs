@@ -43,6 +43,9 @@ namespace TCC.Biometric.Payment.Profiles
             CreateMap<BiometricPaymentRequestDto, Transaction>()
                 .ForMember(dest => dest.TransactionType, src => src.MapFrom(src => TransactionTypes.payment));
 
+            CreateMap<VerificationAndPaymentRequestDto, Transaction>()
+                .ForMember(dest => dest.TransactionType, src => src.MapFrom(src => TransactionTypes.payment));
+
             CreateMap<BiometricVerification, BiometricVerificationRequestDto>();
             CreateMap<BiometricVerificationRequestDto, BiometricVerification>();
             CreateMap<BiometricVerification, BiometricVerificationResponseDto>();

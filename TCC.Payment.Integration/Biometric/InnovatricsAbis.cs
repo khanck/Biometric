@@ -105,7 +105,7 @@ namespace TCC.Payment.Integration.Biometric
             {
                 try
                 {
-                    string uri = String.Format(_innovatricsConfiguration.Endpoint + "identify/template");
+                    string uri = String.Format(_innovatricsConfiguration.Endpoint + "identify/images");
 
                     // Bypass  SSL error 
                     HttpClientHandler clientHandler = new HttpClientHandler();
