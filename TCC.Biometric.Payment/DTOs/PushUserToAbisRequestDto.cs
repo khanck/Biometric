@@ -4,6 +4,6 @@
     {
         public Guid customer_ID { get; init; } = default!;
 
-        public string enrollActionType { get; set; } 
+        public string enrollActionType { get; set; } = "None";
     }
 }

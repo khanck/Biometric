@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using TCC.Biometric.Payment.DTOs;
 using TCC.Payment.Data.Entities;
@@ -11,6 +13,7 @@ using TCC.Payment.Data.Repositories;
 using TCC.Payment.Integration.Interfaces;
 using TCC.Payment.Integration.Models;
 using TCC.Payment.Integration.Models.Innovatrics;
+using static System.Net.Mime.MediaTypeNames;
 using ILogger = Serilog.ILogger;
 
 namespace TCC.Biometric.Payment.Controllers
@@ -99,8 +102,29 @@ namespace TCC.Biometric.Payment.Controllers
             //    return Unauthorized();
 
             _logger.Information("request image " + request.biometric.FirstOrDefault().biometricData);
-            await _alpetaServer.Login();
+            
+
             var response = new ResultDto<CustomerResponseDto>();
+
+            Identification identification = new Identification();
+            identification.gallery = "default";
+            identification.identificationParameters = new IdentificationParameter();
+            identification.probe = new Probe();
+            identification.probe.faces = new List<AbisImage>();
+            identification.probe.faces.Add(new AbisImage() { dataBytes = request.biometric.FirstOrDefault().biometricData });
+
+            var userExists = _innovatricsAbis.IdentifyByFace(identification).Result;
+
+            if (!userExists.IsNullOrEmpty())
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_030";
+                response.error.errorMessage = "User is already existing in ABIS";
+                response.error.errorDetails = " User is already existing in ABIS ";
+
+                return Conflict(response);
+            }
+
 
             var customer = _autoMapper.Map<Customer>(request);
             customer.createdDate = DateTime.Now;
@@ -177,6 +201,9 @@ namespace TCC.Biometric.Payment.Controllers
                 UserId = customer.TerminalUserId,
                 DownloadInfo = downloadInfo
             });
+
+            // send To Abis           
+            await EnrollUserToAbis(customer, biometric);
 
             response.data = _autoMapper.Map<CustomerResponseDto>(customer);
             response.success = true;
@@ -435,5 +462,26 @@ namespace TCC.Biometric.Payment.Controllers
             return pictureBytes.Length;
         }
 
+        private Task<AbisResponse> EnrollUserToAbis(Customer customer, Biometrics image)
+        {
+            AbisEnrollUser person = new AbisEnrollUser();
+
+            person.enrolledAt = DateTime.Now;
+            person.externalId = customer.Id.ToString();
+            person.enrollAction = new EnrollAction() { enrollActionType = "None", referenceExternalId = customer.Id.ToString() };
+            person.customDetails = new PersonInfo() { givenNames = customer.firstName, surname = customer.lastName, email = customer.email };
+            person.faceModality = new Modality();
+            person.faceModality.faces = new List<Face>();
+
+            AbisImage faceImage = new AbisImage() { captureDevice = "user mobile", dataBytes = image.biometricData };
+            Face face = new Face();
+            face.image = faceImage;
+
+            person.faceModality.faces.Add(face);
+
+            var result = _innovatricsAbis.EnrollPerson(person);
+
+            return result;
+        }
     }
     }

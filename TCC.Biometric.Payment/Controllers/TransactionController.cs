@@ -18,6 +18,7 @@ using TCC.Payment.Integration.Config;
 using TCC.Payment.Integration.Interfaces;
 using ILogger = Serilog.ILogger;
 using TCC.Payment.Integration.Models.Innovatrics;
+using TCC.Payment.Integration.Models;
 
 namespace TCC.Biometric.Payment.Controllers
 {
@@ -440,6 +441,16 @@ namespace TCC.Biometric.Payment.Controllers
                 return NotFound(response);
 
             }
+
+            if (customer.pin!=request.pin.ToString())
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_030";
+                response.error.errorMessage = "customer not verified";
+                response.error.errorDetails = " Please do Verification again";
+
+                return NotFound(response);
+            }
             var paymentCard = _paymentCardRepository.GetByCustomerID(new Guid(verification.FirstOrDefault().externalId)).Result;
 
             if (paymentCard == null)
@@ -455,8 +466,8 @@ namespace TCC.Biometric.Payment.Controllers
             var biometricVerification = _autoMapper.Map<BiometricVerification>(request.biometric);
             biometricVerification.customer_ID = paymentCard.customer_ID;
             biometricVerification.createdDate = DateTime.Now;
-            biometricVerification.verificationStatus = VerificationStatus.pending;
-            biometricVerification.verificationResponse = "pending";
+            biometricVerification.verificationStatus = VerificationStatus.success;
+            biometricVerification.verificationResponse = JsonConvert.SerializeObject(verification.FirstOrDefault());
             biometricVerification.verificationID = verification.FirstOrDefault().score.ToString();
             var Verificationresult = (await _biometricVerificationRepository.AddAsync(biometricVerification));
             _biometricVerificationRepository.SaveChanges();
@@ -465,7 +476,7 @@ namespace TCC.Biometric.Payment.Controllers
             transaction.biometricVerification_ID = biometricVerification.Id;
             transaction.paymentCard_ID = paymentCard.Id;
             transaction.createdDate = DateTime.Now;
-            transaction.status = TransactionStatus.pending;
+            transaction.status = TransactionStatus.success;
             transaction.transactionNumber = (Random.Shared.Next(1000, 10000)).ToString();
 
             var result = (await _transactionRepository.AddAsync(transaction));
