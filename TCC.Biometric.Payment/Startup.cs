@@ -108,6 +108,11 @@ namespace TCC.Biometric.Payment
                 //app.UseSwagger();
                 //app.UseSwaggerUI();
             }
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
+                context.Database.Migrate();
+            }
             app.UseSwagger();
             app.UseSwaggerUI();
 

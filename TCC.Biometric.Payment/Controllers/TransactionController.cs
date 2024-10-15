@@ -407,6 +407,7 @@ namespace TCC.Biometric.Payment.Controllers
         {
             //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
             //    return Unauthorized();
+            //_logger.Information("biometric-verification-and-payment request image " + request.biometric.biometricData);
 
             var response = new ResultDto<TransactionResponseDto>();
 
@@ -442,7 +443,7 @@ namespace TCC.Biometric.Payment.Controllers
 
             }
 
-            if (customer.pin!=request.pin.ToString())
+            if (customer.pin!=request.pin)
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_030";

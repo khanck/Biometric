@@ -15,6 +15,6 @@ namespace TCC.Biometric.Payment.DTOs
 
         public BiometricVerificationRequestDto biometric { get; init; }
         [RegularExpression(@"^(\d{4})$", ErrorMessage = "The PIN must be 4 digits long.")]
-        public int pin { get; init; }
+        public string pin { get; init; }
     }
 }

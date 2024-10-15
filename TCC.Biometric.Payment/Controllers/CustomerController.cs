@@ -101,10 +101,21 @@ namespace TCC.Biometric.Payment.Controllers
             //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
             //    return Unauthorized();
 
-            _logger.Information("request image " + request.biometric.FirstOrDefault().biometricData);
+            //_logger.Information("request image " + request.biometric.FirstOrDefault().biometricData);
             
 
             var response = new ResultDto<CustomerResponseDto>();
+
+            var userEmail = _customerRepository.GetByEmail(request.email).Result;
+            if (userEmail != null)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_035";
+                response.error.errorMessage = "User is already existing";
+                response.error.errorDetails = " User is already existing";
+
+                return Conflict(response);
+            }
 
             Identification identification = new Identification();
             identification.gallery = "default";
