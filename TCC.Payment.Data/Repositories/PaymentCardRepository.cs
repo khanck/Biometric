@@ -18,9 +18,6 @@ namespace TCC.Payment.Data.Repositories
         {
             return await DbSet.Where(o => o.customer.TerminalUserId == customerID).FirstOrDefaultAsync();
         }
-        public async Task<PaymentCard> GetByCustomerID(Guid customerID)
-        {
-            return await DbSet.Where(o => o.customer_ID == customerID).FirstOrDefaultAsync();
-        }
+
     }
 }

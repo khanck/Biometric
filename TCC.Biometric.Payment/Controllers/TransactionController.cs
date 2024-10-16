@@ -17,8 +17,6 @@ using TCC.Payment.Integration.Biometric;
 using TCC.Payment.Integration.Config;
 using TCC.Payment.Integration.Interfaces;
 using ILogger = Serilog.ILogger;
-using TCC.Payment.Integration.Models.Innovatrics;
-using TCC.Payment.Integration.Models;
 
 namespace TCC.Biometric.Payment.Controllers
 {
@@ -34,10 +32,8 @@ namespace TCC.Biometric.Payment.Controllers
         private readonly IPaymentCardRepository _paymentCardRepository;
         private readonly IBiometricRepository _biometricRepository;
         private readonly IAccountRepository _accountRepository;
-        private readonly IBusinessRepository _businessRepository;
 
         private readonly IAlpetaServer _alpetaServer;
-        private readonly IInnovatricsAbis _innovatricsAbis;
 
         private readonly IMapper _autoMapper;
         private readonly ILogger _logger;
@@ -48,9 +44,7 @@ namespace TCC.Biometric.Payment.Controllers
             IPaymentCardRepository paymentCardRepository,
             IBiometricRepository biometricRepository,
             IAccountRepository accountRepository,
-            IBusinessRepository businessRepository,
         IAlpetaServer alpetaServer,
-        IInnovatricsAbis innovatricsAbis,
             IMapper autoMapper, IAuthenticationService authenticationService,
             ILogger logger)
         {
@@ -59,10 +53,8 @@ namespace TCC.Biometric.Payment.Controllers
             _customerRepository = customerRepository;
             _paymentCardRepository = paymentCardRepository;
             _biometricRepository = biometricRepository;
-            _businessRepository = businessRepository;
             _accountRepository = accountRepository;
             _alpetaServer = alpetaServer;
-            _innovatricsAbis = innovatricsAbis;
             _autoMapper = autoMapper;
             _logger = logger;
         }
@@ -112,13 +104,13 @@ namespace TCC.Biometric.Payment.Controllers
         [Route("getbycustomer")]
         [HttpGet]
         //[OpenApiTags("OnboardingTransaction")]  
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<List<CustomerTransactionResponseDto>>))]
-        [Produces(typeof(ResultDto<List<CustomerTransactionResponseDto>>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<List<TransactionResponseDto>>))]
+        [Produces(typeof(ResultDto<List<TransactionResponseDto>>))]
         public async Task<IActionResult> GetByCustomer(Guid Id, CancellationToken cancellationToken = default)
         {  //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
             //    return Unauthorized();
 
-            var response = new ResultDto<List<CustomerTransactionResponseDto>>();
+            var response = new ResultDto<List<TransactionResponseDto>>();
 
             var result = _transactionRepository.GetAllByCustomerID(Id).Result;
 
@@ -133,15 +125,7 @@ namespace TCC.Biometric.Payment.Controllers
                 return Conflict(response);
             }
 
-
-            var transactions = _autoMapper.Map<List<CustomerTransactionResponseDto>>(result);
-            response.data=new List<CustomerTransactionResponseDto>();
-            foreach (var transaction in transactions)
-            {
-               var account = _autoMapper.Map<AccountResponseDto>(_accountRepository.GetByID(transaction.account_ID));
-                transaction.business = _autoMapper.Map<BusinessResponseDto>(_businessRepository.GetByID(account.business_ID));
-                response.data.Add(transaction);
-            }
+            response.data = _autoMapper.Map<List<TransactionResponseDto>>(result);
 
 
             response.success = true;
@@ -399,127 +383,7 @@ namespace TCC.Biometric.Payment.Controllers
             return Ok(response);
 
         }
-        [Route("biometric-verification-and-payment")]
-        [HttpPost]
-        [ProducesResponseType(typeof(ResultDto<TransactionResponseDto>), StatusCodes.Status200OK)]
-        [Produces(typeof(ResultDto<TransactionResponseDto>))]
-        public async Task<IActionResult> BiometricVerificationAndPayment(VerificationAndPaymentRequestDto request, CancellationToken cancellationToken = default)
-        {
-            //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
-            //    return Unauthorized();
-            //_logger.Information("biometric-verification-and-payment request image " + request.biometric.biometricData);
-
-            var response = new ResultDto<TransactionResponseDto>();
-
-            Identification identification = new Identification();
-            identification.gallery = "default";
-            identification.identificationParameters = new IdentificationParameter();
-            identification.probe=new Probe();
-            identification.probe.faces = new List<AbisImage>();
-            identification.probe.faces.Add( new AbisImage() { dataBytes= request.biometric.biometricData });
-
-            var verification = _innovatricsAbis.IdentifyByFace(identification).Result;
-            if (!verification.IsSuccess)
-            {
-                response.error = new ErrorDto();
-                response.error.errorCode = "BP_031";
-                response.error.errorMessage = "issue in Biometric Verification";
-                //response.error.errorDetails = " Please do Biometric Verification";
-
-                return NotFound(response);
-            }
-
-            if (verification.searchResult.IsNullOrEmpty())
-            {
-                response.error = new ErrorDto();
-                response.error.errorCode = "BP_030";
-                response.error.errorMessage = "Biometric not verified";
-                response.error.errorDetails = " Please do Biometric Verification";
-
-                return NotFound(response);
-            }
-
-            var customer = _customerRepository.GetByID(new Guid (verification.searchResult.FirstOrDefault().externalId));
-
-            if (customer == null)
-            {
-                response.error = new ErrorDto();
-                response.error.errorCode = "BP_030";
-                response.error.errorMessage = "customer not found";
-                //response.error.errorDetails = " Please do Biometric Verification";
-
-                return NotFound(response);
-
-            }
-
-            if (customer.pin!=request.pin)
-            {
-                response.error = new ErrorDto();
-                response.error.errorCode = "BP_030";
-                response.error.errorMessage = "customer not verified";
-                response.error.errorDetails = " Please do Verification again";
-
-                return NotFound(response);
-            }
-            var paymentCard = _paymentCardRepository.GetByCustomerID(new Guid(verification.searchResult.FirstOrDefault().externalId)).Result;
-
-            if (paymentCard == null)
-            {
-                response.error = new ErrorDto();
-                response.error.errorCode = "BP_030";
-                response.error.errorMessage = "payment Card not found";
-                //response.error.errorDetails = " Please do Biometric Verification";
-
-                return NotFound(response);
-            }
-            var account = _accountRepository.GetByID(request.account_ID);
-
-            if (account == null)
-            {
-                response.error = new ErrorDto();
-                response.error.errorCode = "BP_035";
-                response.error.errorMessage = "account not found";
-                //response.error.errorDetails = " Please do Biometric Verification";
-
-                return NotFound(response);
-
-            }
 
 
-
-            var biometricVerification = _autoMapper.Map<BiometricVerification>(request.biometric);
-            biometricVerification.customer_ID = paymentCard.customer_ID;
-            biometricVerification.createdDate = DateTime.Now;
-            biometricVerification.verificationStatus = VerificationStatus.success;
-            biometricVerification.verificationResponse = JsonConvert.SerializeObject(verification.searchResult.FirstOrDefault());
-            biometricVerification.verificationID = verification.searchResult.FirstOrDefault().score.ToString();
-            var Verificationresult = (await _biometricVerificationRepository.AddAsync(biometricVerification));
-            _biometricVerificationRepository.SaveChanges();
-
-            var transaction = _autoMapper.Map<Transaction>(request);
-            transaction.biometricVerification_ID = biometricVerification.Id;
-            transaction.paymentCard_ID = paymentCard.Id;
-            transaction.createdDate = DateTime.Now;
-            transaction.status = TransactionStatus.success;
-            transaction.transactionNumber = (Random.Shared.Next(1000, 10000)).ToString();
-
-            var result = (await _transactionRepository.AddAsync(transaction));
-            _transactionRepository.SaveChanges();
-
-            response.data = _autoMapper.Map<TransactionResponseDto>(result.Entity);
-
-            //var biometric = _biometricRepository.GetByCustomerID(customer.Id).Result;
-
-            response.data.customer = _autoMapper.Map<CustomerResponseDto>(customer);
-            //response.data.paymentCard = _autoMapper.Map<PaymentCardResponseDto>(paymentCard);
-            response.data.biometricVerification = _autoMapper.Map<BiometricVerificationResponseDto>(biometricVerification);
-            //response.data.customer.biometric.Add( _autoMapper.Map<BiometricResponseDto>(biometric));
-
-            response.success = true;
-
-
-            return Ok(response);
-        }
-
-        }
+    }
 }

@@ -1,13 +1,10 @@
-﻿using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using TCC.Payment.Data.Enums;
 
 namespace TCC.Biometric.Payment.DTOs
 {
     public class AccountResponseDto
     {
-        [JsonIgnore]
-        public Guid business_ID { get; set; }
         [StringLength(100)]
         public string bankName { get; init; } = null!;
 
@@ -19,7 +16,6 @@ namespace TCC.Biometric.Payment.DTOs
 
         //public Boolean? isPrimary { get; set; }
         public AccountStatus status { get; set; }
-       
 
     }
 }

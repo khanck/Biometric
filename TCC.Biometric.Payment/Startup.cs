@@ -18,7 +18,6 @@ using TCC.Payment.Integration.Config;
 using TCC.Payment.Integration.Interfaces;
 using TCC.Payment.Integration.Biometric;
 using TCC.Biometric.Payment.Config;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace TCC.Biometric.Payment
 {
@@ -60,27 +59,28 @@ namespace TCC.Biometric.Payment
             services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
             services.AddInMemoryRateLimiting();
 
-
+            services.AddSingleton<WebSocketHandler>();
             var logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(builder.Configuration)
                 .Enrich.FromLogContext()
                 .CreateLogger();
 
             _logger = logger;
-            //builder.Logging.ClearProviders();
-            //services.AddSingleton(logger);
+            builder.Logging.ClearProviders();
+            services.AddSingleton(logger);
             services.AddSerilog(logger);
 
 
 
             
             services.Configure<AlpetaConfiguration>(_configuration.GetSection("AlpetaConfiguration"));
-            services.Configure<InnovatricsConfiguration>(_configuration.GetSection("InnovatricsConfiguration"));
-            services.AddCors()            
-             .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            //services
+            // .AddCore()
+            // .AddInfrastructure()
+            // .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
             // services
-
+ 
             //Add services to the container.
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
@@ -92,7 +92,6 @@ namespace TCC.Biometric.Payment
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             
             services.AddScoped<IAlpetaServer, AlpetaServer>();
-            services.AddScoped<IInnovatricsAbis, InnovatricsAbis>();
 
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -108,30 +107,44 @@ namespace TCC.Biometric.Payment
                 //app.UseSwagger();
                 //app.UseSwaggerUI();
             }
-            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-            {
-                var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
-                context.Database.Migrate();
-            }
             app.UseSwagger();
             app.UseSwaggerUI();
 
             app.ExceptionHandler(_logger);
             app.UseHttpsRedirection();
             app.UseCors(builder => builder
-   .AllowAnyOrigin()
-   .AllowAnyMethod()
-   .AllowAnyHeader()
-    );
-         
+               .AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+                );
+            app.UseAuthorization();
+            app.UseHttpsRedirection();
+
             app.UseRouting();
-            app.UseAuthorization();           
+
+          
+            app.UseAuthorization();
+           
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "api/{controller}/{action}/{id?}");
             });
+            app.UseWebSockets();
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/ws")
+                {
+                    var webSocketHandler = context.RequestServices.GetRequiredService<WebSocketHandler>();
+                    await webSocketHandler.HandleWebSocketConnection(context);
+                }
+                else
+                {
+                    await next();
+                }
+            });
+           // app.UseExceptionHandler();
 
         }               
 

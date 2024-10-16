@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using System.Net.WebSockets;
+using System.Text.Json.Serialization;
 using TCC.Biometric.Payment.Config;
 using TCC.Biometric.Payment.DTOs;
+using TCC.Biometric.Payment.Handlers;
 using TCC.Payment.Data.Entities;
 using TCC.Payment.Data.Interfaces;
 using TCC.Payment.Data.Repositories;
@@ -22,6 +25,7 @@ namespace TCC.Biometric.Payment.Controllers
         private readonly ICustomerRepository _customerRepository;
         private readonly IPaymentCardRepository _paymentCardRepository;
         private readonly IAlpetaServer _alpetaServer;
+      //  private readonly WebSocketHandler _webSocketHandler;
 
         private readonly IMapper _autoMapper;
         private readonly ILogger _logger;
@@ -32,6 +36,7 @@ namespace TCC.Biometric.Payment.Controllers
             IPaymentCardRepository paymentCardRepository,
             IAlpetaServer alpetaServer,
             IMapper autoMapper, IAuthenticationService authenticationService,
+           // WebSocketHandler webSocketHandler,
             ILogger logger)
         {
             _transactionRepository = transactionRepository;
@@ -40,7 +45,27 @@ namespace TCC.Biometric.Payment.Controllers
             _paymentCardRepository = paymentCardRepository;
             _alpetaServer = alpetaServer;
             _autoMapper = autoMapper;
+           // _webSocketHandler = webSocketHandler;
             _logger = logger;
+        }
+
+        [Route("testsocket")]
+        [HttpGet]
+        //[OpenApiTags("Transaction")]  
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<CustomerResponseDto>))]
+        [Produces(typeof(ResultDto<CustomerResponseDto>))]
+        public async Task<IActionResult> TestSocket(CancellationToken cancellationToken = default)
+        {
+         
+            // var webSocketHandler = new ClientWebSocket();
+            //await webSocketHandler.HandleWebSocketConnection(context);
+
+            //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
+            //    return Unauthorized();
+
+
+            return Ok();
+
         }
 
 
