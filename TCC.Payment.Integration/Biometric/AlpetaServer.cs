@@ -27,7 +27,7 @@ namespace TCC.Payment.Integration.Biometric
             _alpetaConfiguration = alpetaConfiguration.Value;
             _logger = logger;
 
-            Login();
+            ////Login();
         }
 
         public void Dispose()

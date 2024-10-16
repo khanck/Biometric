@@ -19,7 +19,7 @@ namespace TCC.Payment.Integration.Biometric
     {
 
         private readonly InnovatricsConfiguration _innovatricsConfiguration;
-        private readonly ILogger _logger;        
+        private readonly ILogger _logger;
         public InnovatricsAbis(IOptions<InnovatricsConfiguration> configuration, ILogger logger)
         {
             _innovatricsConfiguration = configuration.Value;
@@ -45,7 +45,7 @@ namespace TCC.Payment.Integration.Biometric
 
                     // Bypass  SSL error 
                     HttpClientHandler clientHandler = new HttpClientHandler();
-                    clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };                   
+                    clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
                     var client = new HttpClient(clientHandler);
                     ///END 
 
@@ -60,7 +60,7 @@ namespace TCC.Payment.Integration.Biometric
 
                     //AuthorizeDto.action = _Configurations.Action;
                     string inputJson = JsonConvert.SerializeObject(person);
-                    HttpContent inputContent = new StringContent(inputJson, Encoding.UTF8, "application/json");                  
+                    HttpContent inputContent = new StringContent(inputJson, Encoding.UTF8, "application/json");
 
                     using (HttpResponseMessage response = await client.PutAsync(uri, inputContent))
                     {
@@ -68,15 +68,15 @@ namespace TCC.Payment.Integration.Biometric
                         {
                             //var str = response.Content.ReadAsStringAsync();
                             result = JsonConvert.DeserializeObject<AbisResponse>(await response.Content.ReadAsStringAsync());
-                            result.IsSuccess=true;
+                            result.IsSuccess = true;
                             _logger.Information(" InnovatricsAbis EnrollPerson: Success   ID :{0}"/*, result.transId*/);
                         }
                         else
                         {
                             //result.ResultCode = (int)response.StatusCode;
-                            var errors = JsonConvert.DeserializeObject<AbisError>(await response.Content.ReadAsStringAsync());
+                            result.error = JsonConvert.DeserializeObject<AbisError>(await response.Content.ReadAsStringAsync());
 
-                            _logger.Error(" InnovatricsAbis EnrollPerson: Error :  ID:{0} {1}"/*, result.transId, JsonConvert.SerializeObject(result)*/);
+                            _logger.Error(" InnovatricsAbis EnrollPerson: Error :  ID:{0}", JsonConvert.SerializeObject(result.error));
 
                         }
                     }
@@ -97,10 +97,10 @@ namespace TCC.Payment.Integration.Biometric
         }
 
 
-        public async Task<List<AbisResponse>> IdentifyByFace(Identification request)
+        public async Task<AbisResponse> IdentifyByFace(Identification request)
         {
-
-            List<AbisResponse> ? result = new List<AbisResponse>();
+            AbisResponse? result = new AbisResponse();
+            result.searchResult = new List<AbisResponse>();
 
             Task.Run(async () =>
             {
@@ -124,7 +124,7 @@ namespace TCC.Payment.Integration.Biometric
                     //HttpClient client = new Authentication().GetHttpClient(_Configurations);
 
                     //AuthorizeDto.action = _Configurations.Action;
-                    request.identificationParameters.threshold=_innovatricsConfiguration.Threshold;
+                    request.identificationParameters.threshold = _innovatricsConfiguration.Threshold;
 
                     string inputJson = JsonConvert.SerializeObject(request);
                     HttpContent inputContent = new StringContent(inputJson, Encoding.UTF8, "application/json");
@@ -133,14 +133,16 @@ namespace TCC.Payment.Integration.Biometric
                     {
                         if (response.IsSuccessStatusCode)
                         {
-                            var str = response.Content.ReadAsStringAsync();
-                            result = JsonConvert.DeserializeObject<List<AbisResponse>>(await response.Content.ReadAsStringAsync());
+                            //var str = response.Content.ReadAsStringAsync();
+                            result.searchResult = JsonConvert.DeserializeObject<List<AbisResponse>>(await response.Content.ReadAsStringAsync());
+                            result.IsSuccess = true;
                             _logger.Information(" InnovatricsAbis IdentifyByFace: Success   ID :{0}"/*, result.transId*/);
                         }
                         else
                         {
                             //result.ResultCode = (int)response.StatusCode;
-                            var error = JsonConvert.DeserializeObject<List<AbisError>>(await response.Content.ReadAsStringAsync());
+                            //var str = response.Content.ReadAsStringAsync();
+                            result.error = JsonConvert.DeserializeObject<AbisError>(await response.Content.ReadAsStringAsync());
 
                             _logger.Error(" InnovatricsAbis IdentifyByFace: Error :  ID:{0} {1}"/*, result.transId, JsonConvert.SerializeObject(result)*/);
 
@@ -163,16 +165,16 @@ namespace TCC.Payment.Integration.Biometric
         }
 
         //hard delete
-        public async Task<List<AbisResponse>> DeletePerson(Guid externalId)  
+        public async Task<AbisResponse> DeletePerson(Guid externalId)
         {
 
-            List<AbisResponse>? result = new List<AbisResponse>();
+            AbisResponse? result = new AbisResponse();
 
             Task.Run(async () =>
             {
                 try
                 {
-                    string uri = String.Format(_innovatricsConfiguration.Endpoint + "applicants/{0}",externalId);
+                    string uri = String.Format(_innovatricsConfiguration.Endpoint + "applicants/{0}", externalId);
 
                     // Bypass  SSL error 
                     HttpClientHandler clientHandler = new HttpClientHandler();
@@ -190,21 +192,22 @@ namespace TCC.Payment.Integration.Biometric
                     //HttpClient client = new Authentication().GetHttpClient(_Configurations);
 
                     //AuthorizeDto.action = _Configurations.Action;
-                    
+
                     using (HttpResponseMessage response = await client.DeleteAsync(uri))
                     {
                         if (response.IsSuccessStatusCode)
                         {
-                            var str = response.Content.ReadAsStringAsync();
-                            result = JsonConvert.DeserializeObject<List<AbisResponse>>(await response.Content.ReadAsStringAsync());
+                            // var str = response.Content.ReadAsStringAsync();
+                            result = JsonConvert.DeserializeObject<AbisResponse>(await response.Content.ReadAsStringAsync());
+                            result.IsSuccess = true;
                             _logger.Information(" InnovatricsAbis DeletePerson: Success   ID :{0}"/*, result.transId*/);
                         }
                         else
                         {
                             //result.ResultCode = (int)response.StatusCode;
-                            var error = JsonConvert.DeserializeObject<List<AbisError>>(await response.Content.ReadAsStringAsync());
+                            result.error = JsonConvert.DeserializeObject<AbisError>(await response.Content.ReadAsStringAsync());
 
-                            _logger.Error(" InnovatricsAbis DeletePerson: Error :  ID:{0} {1}"/*, result.transId, JsonConvert.SerializeObject(result)*/);
+                            _logger.Error(" InnovatricsAbis DeletePerson: Error :  ID:{0}", JsonConvert.SerializeObject(result.error));
 
                         }
                     }

@@ -125,8 +125,17 @@ namespace TCC.Biometric.Payment.Controllers
             identification.probe.faces.Add(new AbisImage() { dataBytes = request.biometric.FirstOrDefault().biometricData });
 
             var userExists = _innovatricsAbis.IdentifyByFace(identification).Result;
+            if (!userExists.IsSuccess)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_031";
+                response.error.errorMessage = "issue in Biometric face Verification";
+                //response.error.errorDetails = " Please do Biometric Verification";
 
-            if (!userExists.IsNullOrEmpty())
+                return NotFound(response);
+            }
+
+            if (!userExists.searchResult.IsNullOrEmpty())
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_030";
@@ -166,7 +175,11 @@ namespace TCC.Biometric.Payment.Controllers
             // var customer = _autoMapper.Map<Customer>(request);
             //customer.Id = biometricResult.Entity.Id;
             customer.createdDate = DateTime.Now;
-            customer.status = CustomerStatus.pending;
+            customer.status = CustomerStatus.active;
+           
+
+            //add user to Alpeta server
+            /*
             CreateUserRequestDTO createUserRequestDTO = new CreateUserRequestDTO();
             createUserRequestDTO.UpdateUserID(customer.TerminalUserId);
             createUserRequestDTO.UserInfo.ID = customer.TerminalUserId.ToString();
@@ -213,8 +226,21 @@ namespace TCC.Biometric.Payment.Controllers
                 DownloadInfo = downloadInfo
             });
 
+            */ 
+            //End
+
+
             // send To Abis           
-            await EnrollUserToAbis(customer, biometric);
+            var abisResponse =await EnrollUserToAbis(customer, biometric);
+            if (!abisResponse.IsSuccess)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_031";
+                response.error.errorMessage = "issue in ABIS Enrolment ";
+                //response.error.errorDetails = " Please do Biometric Verification";
+
+                return NotFound(response);
+            }
 
             response.data = _autoMapper.Map<CustomerResponseDto>(customer);
             response.success = true;

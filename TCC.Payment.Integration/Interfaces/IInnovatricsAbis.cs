@@ -10,7 +10,7 @@ namespace TCC.Payment.Integration.Interfaces
     public interface IInnovatricsAbis
     {
         Task<AbisResponse> EnrollPerson(AbisEnrollUser person);
-        Task<List<AbisResponse>> IdentifyByFace(Identification request);
-        Task<List<AbisResponse>> DeletePerson(Guid externalId);
+        Task<AbisResponse> IdentifyByFace(Identification request);
+        Task<AbisResponse> DeletePerson(Guid externalId);
     }
 }

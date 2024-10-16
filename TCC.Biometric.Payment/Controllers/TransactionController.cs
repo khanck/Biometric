@@ -419,8 +419,17 @@ namespace TCC.Biometric.Payment.Controllers
             identification.probe.faces.Add( new AbisImage() { dataBytes= request.biometric.biometricData });
 
             var verification = _innovatricsAbis.IdentifyByFace(identification).Result;
+            if (!verification.IsSuccess)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_031";
+                response.error.errorMessage = "issue in Biometric Verification";
+                //response.error.errorDetails = " Please do Biometric Verification";
 
-            if (verification.IsNullOrEmpty())
+                return NotFound(response);
+            }
+
+            if (verification.searchResult.IsNullOrEmpty())
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_030";
@@ -430,7 +439,7 @@ namespace TCC.Biometric.Payment.Controllers
                 return NotFound(response);
             }
 
-            var customer = _customerRepository.GetByID(new Guid (verification.FirstOrDefault().externalId));
+            var customer = _customerRepository.GetByID(new Guid (verification.searchResult.FirstOrDefault().externalId));
 
             if (customer == null)
             {
@@ -452,7 +461,7 @@ namespace TCC.Biometric.Payment.Controllers
 
                 return NotFound(response);
             }
-            var paymentCard = _paymentCardRepository.GetByCustomerID(new Guid(verification.FirstOrDefault().externalId)).Result;
+            var paymentCard = _paymentCardRepository.GetByCustomerID(new Guid(verification.searchResult.FirstOrDefault().externalId)).Result;
 
             if (paymentCard == null)
             {
@@ -463,13 +472,27 @@ namespace TCC.Biometric.Payment.Controllers
 
                 return NotFound(response);
             }
+            var account = _accountRepository.GetByID(request.account_ID);
+
+            if (account == null)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_035";
+                response.error.errorMessage = "account not found";
+                //response.error.errorDetails = " Please do Biometric Verification";
+
+                return NotFound(response);
+
+            }
+
+
 
             var biometricVerification = _autoMapper.Map<BiometricVerification>(request.biometric);
             biometricVerification.customer_ID = paymentCard.customer_ID;
             biometricVerification.createdDate = DateTime.Now;
             biometricVerification.verificationStatus = VerificationStatus.success;
-            biometricVerification.verificationResponse = JsonConvert.SerializeObject(verification.FirstOrDefault());
-            biometricVerification.verificationID = verification.FirstOrDefault().score.ToString();
+            biometricVerification.verificationResponse = JsonConvert.SerializeObject(verification.searchResult.FirstOrDefault());
+            biometricVerification.verificationID = verification.searchResult.FirstOrDefault().score.ToString();
             var Verificationresult = (await _biometricVerificationRepository.AddAsync(biometricVerification));
             _biometricVerificationRepository.SaveChanges();
 

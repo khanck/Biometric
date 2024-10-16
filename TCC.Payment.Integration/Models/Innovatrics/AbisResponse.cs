@@ -13,8 +13,10 @@ namespace TCC.Payment.Integration.Models.Innovatrics
         public string gallery { get; set; }
         public int score { get; set; }
 
+        public List<AbisResponse> searchResult { get; set; }
+
         public bool IsSuccess { get; set; }=false;
-        public List<AbisError> errors { get; set; }
+        public AbisError error { get; set; }
     }
 
 }
