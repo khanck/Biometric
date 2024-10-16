@@ -49,7 +49,7 @@ namespace TCC.Biometric.Payment.Handlers
                 result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
                 var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 Console.WriteLine($"Received message from client {clientId}: {message}");
-                await BroadcastMessage( Newtonsoft.Json.JsonConvert.SerializeObject(new { accountNumber = "PAK1109900998899988", amount = 322.23 }));
+               await SendMessageToClient( "100",Newtonsoft.Json.JsonConvert.SerializeObject(new { accountNumber = "PAK1109900998899988", amount = 322.23 }));
                 // Process the message if needed
 
             } while (!result.CloseStatus.HasValue);
