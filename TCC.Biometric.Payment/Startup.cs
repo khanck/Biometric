@@ -85,11 +85,12 @@ namespace TCC.Biometric.Payment
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<IBiometricRepository,BiometricRepository >();
-            services.AddScoped<IBiometricVerificationRepository,BiometricVerificationRepository >();
+            services.AddScoped<IBiometricVerificationRepository,BiometricVerificationRepository>();
             services.AddScoped<IBusinessRepository,BusinessRepository >();
             services.AddScoped<IPaymentCardRepository,PaymentCardRepository >();
             services.AddScoped<ITransactionRepository,TransactionRepository >();
-            services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<ITransactionRepository, TransactionRepository>();
+            services.AddScoped<ITriggerRepository, TriggerRepository>();
             
             services.AddScoped<IAlpetaServer, AlpetaServer>();
             services.AddScoped<IInnovatricsAbis, InnovatricsAbis>();

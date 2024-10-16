@@ -66,8 +66,10 @@ namespace TCC.Biometric.Payment.Profiles
             CreateMap<Biometrics, BiometricResponseDto>();
             CreateMap<BiometricResponseDto, Business>();
 
-
-
+            CreateMap<TriggerResponseDto, Trigger>();
+            CreateMap<Trigger, TriggerResponseDto>();
+            CreateMap<TriggerRequestDto, Trigger>();
+            CreateMap<Trigger, TriggerRequestDto>();
             //CreateMap<Application, InvitationStatusDto>()
             //     .ForMember(dest => dest.Payment, src => src.MapFrom(src => src.PersonId));
         }

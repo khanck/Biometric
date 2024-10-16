@@ -112,7 +112,7 @@ namespace TCC.Biometric.Payment.Controllers
         [Route("getbycustomer")]
         [HttpGet]
         //[OpenApiTags("OnboardingTransaction")]  
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<List<CustomerTransactionResponseDto>>))]
+        [ProducesResponseType(typeof(ResultDto<List<CustomerTransactionResponseDto>>), StatusCodes.Status200OK)]
         [Produces(typeof(ResultDto<List<CustomerTransactionResponseDto>>))]
         public async Task<IActionResult> GetByCustomer(Guid Id, CancellationToken cancellationToken = default)
         {  //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
@@ -152,7 +152,7 @@ namespace TCC.Biometric.Payment.Controllers
         [Route("getbybusiness")]
         [HttpGet]
         //[OpenApiTags("OnboardingTransaction")]  
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<List<TransactionResponseDto>>))]
+        [ProducesResponseType(typeof(ResultDto<List<TransactionResponseDto>>), StatusCodes.Status200OK)]
         [Produces(typeof(ResultDto<List<TransactionResponseDto>>))]
         public async Task<IActionResult> GetByBusiness(Guid Id, CancellationToken cancellationToken = default)
         {  //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))

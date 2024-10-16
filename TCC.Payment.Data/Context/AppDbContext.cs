@@ -15,6 +15,7 @@ namespace TCC.Payment.Data.Context
         public DbSet<Transaction> transactions { get; set; }
         public DbSet<Business> business { get; set; }
         public DbSet<Account> accounts { get; set; }
+        public DbSet<Trigger> triggers { get; set; }     
 
 
     }

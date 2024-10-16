@@ -51,7 +51,7 @@ namespace TCC.Biometric.Payment.Controllers
 
         [Route("Health")]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> Health()
         {
             return Ok("Services are running");
@@ -61,7 +61,7 @@ namespace TCC.Biometric.Payment.Controllers
         [Route("get")]
         [HttpGet]     
         //[OpenApiTags("OnboardingCustomer")]  
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<CustomerResponseDto>))]
+        [ProducesResponseType(typeof(ResultDto<CustomerResponseDto>), StatusCodes.Status200OK)]
         [Produces(typeof(ResultDto<CustomerResponseDto>))]
         public async Task<IActionResult> GetCustomer(Guid Id, CancellationToken cancellationToken = default)
         {  //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
@@ -370,7 +370,7 @@ namespace TCC.Biometric.Payment.Controllers
 
         [Route("update-user-picture")]
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<CustomerResponseDto>))]
+        [ProducesResponseType(typeof(ResultDto<CustomerResponseDto>), StatusCodes.Status200OK)]
         [Produces(typeof(ResultDto<CustomerResponseDto>))]
         public async Task<IActionResult> UpdateUserPicture(UpdateUserPictureReqDTO updateUserPictureReqDTO, CancellationToken cancellationToken = default)
         {
