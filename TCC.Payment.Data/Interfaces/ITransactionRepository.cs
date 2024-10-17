@@ -24,6 +24,6 @@ namespace TCC.Payment.Data.Interfaces
 
         Task<List<Transaction>> GetAllByCustomerID(Guid customerID);
         Task<List<Transaction>> GetAllByBusinessID(Guid businessID);
-
+        Task<Transaction> GetByBillNumber(string billNumber);
     }
 }

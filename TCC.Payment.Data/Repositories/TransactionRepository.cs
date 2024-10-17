@@ -22,6 +22,9 @@ namespace TCC.Payment.Data.Repositories
         {
             return await DbSet.Where(o => o.account.business_ID == businessID).OrderByDescending(o => o.createdDate).Take(100).ToListAsync();
         }
-
+        public async Task<Transaction> GetByBillNumber(string billNumber)
+        {
+            return await DbSet.Where(o => o.billNumber == billNumber).OrderByDescending(o => o.createdDate).FirstOrDefaultAsync();
+        }
     }
 }

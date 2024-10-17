@@ -71,7 +71,7 @@ namespace TCC.Biometric.Payment.Controllers
         [Route("get")]
         [HttpGet]
         //[OpenApiTags("Transaction")]  
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<TransactionResponseDto>))]
+        [ProducesResponseType(typeof(ResultDto<TransactionResponseDto>), StatusCodes.Status200OK)]
         [Produces(typeof(ResultDto<TransactionResponseDto>))]
         public async Task<IActionResult> GetTransaction(Guid Id, CancellationToken cancellationToken = default)
         { 
@@ -104,11 +104,56 @@ namespace TCC.Biometric.Payment.Controllers
 
             response.success = true;
             return Ok(response);
+        }
+
+        [Route("getbybillnumber")]
+        [HttpGet]
+        //[OpenApiTags("Transaction")]  
+        [ProducesResponseType(typeof(ResultDto<TransactionResponseDto>), StatusCodes.Status200OK)]
+        [Produces(typeof(ResultDto<TransactionResponseDto>))]
+        public async Task<IActionResult> GetByBillNumber(string Id, CancellationToken cancellationToken = default)
+        {
+            //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
+            //    return Unauthorized();
+            var response = new ResultDto<TransactionResponseDto>();
+
+            var transaction = _transactionRepository.GetByBillNumber(Id).Result;
+
+
+            if (transaction == null)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_001";
+                response.error.errorMessage = "Transaction Not Found";
+                //response.error.errorDetails = "digital ID Transaction Not Found";
+
+                return Conflict(response);
+            }
+
+            response.data = _autoMapper.Map<TransactionResponseDto>(transaction);
+
+
+            var biometricVerification = _biometricVerificationRepository.GetByID(transaction.biometricVerification_ID);
+            if (biometricVerification != null && biometricVerification.customer_ID!=null)
+            {
+                var customer = _customerRepository.GetByID((Guid)biometricVerification.customer_ID);
+                response.data.customer = _autoMapper.Map<CustomerResponseDto>(customer);
+
+                //var biometric = _biometricRepository.GetByCustomerID(customer.Id).Result;
+
+                //response.data.paymentCard = _autoMapper.Map<PaymentCardResponseDto>(paymentCard);
+                response.data.biometricVerification = _autoMapper.Map<BiometricVerificationResponseDto>(biometricVerification);
+                //response.data.customer.biometric.Add( _autoMapper.Map<BiometricResponseDto>(biometric));
+
+            }
+
+
+            response.success = true;
+            return Ok(response);
 
 
         }
 
-     
         [Route("getbycustomer")]
         [HttpGet]
         //[OpenApiTags("OnboardingTransaction")]  

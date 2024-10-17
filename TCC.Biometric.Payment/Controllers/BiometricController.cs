@@ -47,7 +47,7 @@ namespace TCC.Biometric.Payment.Controllers
         [Route("verifycustomer")]
         [HttpGet]
         //[OpenApiTags("Transaction")]  
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<CustomerResponseDto>))]
+        [ProducesResponseType( typeof(ResultDto<CustomerResponseDto>), StatusCodes.Status200OK)]
         [Produces(typeof(ResultDto<CustomerResponseDto>))]
         public async Task<IActionResult> VerifyCustomer(CancellationToken cancellationToken = default)
         {

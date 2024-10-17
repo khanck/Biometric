@@ -37,7 +37,7 @@ namespace TCC.Biometric.Payment.Controllers
         [Route("get")]
         [HttpGet]       
         //[OpenApiTags("OnboardingBusiness")]  
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<BusinessResponseDto>))]
+        [ProducesResponseType( typeof(ResultDto<BusinessResponseDto>), StatusCodes.Status200OK)]
         [Produces(typeof(ResultDto<BusinessResponseDto>))]
         public async Task<IActionResult> GetBusiness(Guid Id, CancellationToken cancellationToken = default)
         {  //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))

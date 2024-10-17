@@ -34,7 +34,7 @@ namespace TCC.Biometric.Payment.Controllers
         [Route("get")]
         [HttpGet]       
         //[OpenApiTags("OnboardingPaymentCard")]  
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResultDto<PaymentCardResponseDto>))]
+        [ProducesResponseType(typeof(ResultDto<PaymentCardResponseDto>), StatusCodes.Status200OK)]
         [Produces(typeof(ResultDto<PaymentCardResponseDto>))]
         public async Task<IActionResult> GetPaymentCard(Guid Id, CancellationToken cancellationToken = default)
         {  
