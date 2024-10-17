@@ -17,7 +17,7 @@ namespace TCC.Payment.Data.Repositories
         }
         public async Task<Trigger> GetLive(string device_ID)
         {
-            return await DbSet.Where(o => o.device_ID == device_ID && o.status==TriggerStatus.pending && o.createdDate >= DateTime.Now.AddSeconds(-25)).OrderByDescending(o => o.createdDate).FirstOrDefaultAsync();
+            return await DbSet.Where(o => o.device_ID == device_ID && o.status==TriggerStatus.pending && o.createdDate >= DateTime.Now.AddSeconds(-50)).OrderByDescending(o => o.createdDate).FirstOrDefaultAsync();
         }
 
         //public async Task<Trigger> DiscardOldTrigger(string device_ID)

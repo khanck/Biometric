@@ -506,7 +506,7 @@ namespace TCC.Biometric.Payment.Controllers
 
                 return NotFound(response);
             }
-            var paymentCard = _paymentCardRepository.GetByCustomerID(new Guid(verification.searchResult.FirstOrDefault().externalId)).Result;
+            var paymentCard = _paymentCardRepository.GetByCustomerID(customer.Id).Result;
 
             if (paymentCard == null)
             {

@@ -16,7 +16,7 @@ namespace TCC.Payment.Data.Entities
         public Guid customer_ID { get; set; } = default!;     
         public BiometricTypes biometricType { get; init; }
 
-        [StringLength(20)]
+        [StringLength(50)]
         public string abisReferenceID { get; set; }    
         public string biometricData { get; init; } = null!;
         public DateTime createdDate { get; set; } 
