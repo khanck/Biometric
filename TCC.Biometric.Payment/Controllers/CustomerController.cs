@@ -112,7 +112,7 @@ namespace TCC.Biometric.Payment.Controllers
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_035";
                 response.error.errorMessage = "User is already existing";
-                response.error.errorDetails = " User is already existing";
+                response.error.errorDetails = "User is already existing";
 
                 return Conflict(response);
             }
@@ -158,7 +158,7 @@ namespace TCC.Biometric.Payment.Controllers
             biometric.customer_ID = customer.Id;
             biometric.createdDate = DateTime.Now;
             biometric.status = BiometricStatus.pending;
-            biometric.abisReferenceID = customer.TerminalUserId.ToString();
+            biometric.abisReferenceID = customer.Id.ToString();
 
             var biometricResult = (await _biometricRepository.AddAsync(biometric));
             _biometricRepository.SaveChanges();
@@ -410,8 +410,8 @@ namespace TCC.Biometric.Payment.Controllers
             }
 
             response.data = _autoMapper.Map<CustomerResponseDto>(customer);
-            //var biometric = _biometricRepository.GetByCustomerID(customer.Id).Result;
-            //response.data.biometric.Add( _autoMapper.Map<BiometricResponseDto>(biometric));
+            var biometric = _biometricRepository.GetByCustomerID(customer.Id).Result;
+            response.data.biometric.Add(_autoMapper.Map<BiometricResponseDto>(biometric));
 
             response.success = true;
             return Ok(response);
