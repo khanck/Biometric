@@ -35,6 +35,7 @@ namespace TCC.Biometric.Payment.Controllers
         private readonly IBiometricRepository _biometricRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IBusinessRepository _businessRepository;
+        private readonly ITriggerRepository _triggerRepository;
 
         private readonly IAlpetaServer _alpetaServer;
         private readonly IInnovatricsAbis _innovatricsAbis;
@@ -49,6 +50,7 @@ namespace TCC.Biometric.Payment.Controllers
             IBiometricRepository biometricRepository,
             IAccountRepository accountRepository,
             IBusinessRepository businessRepository,
+            ITriggerRepository triggerRepository,
         IAlpetaServer alpetaServer,
         IInnovatricsAbis innovatricsAbis,
             IMapper autoMapper, IAuthenticationService authenticationService,
@@ -61,6 +63,7 @@ namespace TCC.Biometric.Payment.Controllers
             _biometricRepository = biometricRepository;
             _businessRepository = businessRepository;
             _accountRepository = accountRepository;
+            _triggerRepository = triggerRepository;
             _alpetaServer = alpetaServer;
             _innovatricsAbis = innovatricsAbis;
             _autoMapper = autoMapper;
@@ -410,7 +413,7 @@ namespace TCC.Biometric.Payment.Controllers
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_030";
-                response.error.errorMessage = "customer not found";
+                response.error.errorMessage = "Customer not found";
                 //response.error.errorDetails = " Please do Biometric Verification";
 
                 return NotFound(response);
@@ -468,10 +471,10 @@ namespace TCC.Biometric.Payment.Controllers
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_031";
-                response.error.errorMessage = "issue in Biometric Verification";
+                response.error.errorMessage = "Issue in biometric verification";
                 //response.error.errorDetails = " Please do Biometric Verification";
 
-                return NotFound(response);
+                return Ok(response);
             }
 
             if (verification.searchResult.IsNullOrEmpty())
@@ -481,7 +484,7 @@ namespace TCC.Biometric.Payment.Controllers
                 response.error.errorMessage = "Biometric not verified";
                 response.error.errorDetails = " Please do Biometric Verification";
 
-                return NotFound(response);
+                return Ok(response);
             }
 
             var customer = _customerRepository.GetByID(new Guid (verification.searchResult.FirstOrDefault().externalId));
@@ -490,10 +493,10 @@ namespace TCC.Biometric.Payment.Controllers
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_030";
-                response.error.errorMessage = "customer not found";
+                response.error.errorMessage = "Customer not found";
                 //response.error.errorDetails = " Please do Biometric Verification";
 
-                return NotFound(response);
+                return Ok(response);
 
             }
 
@@ -501,10 +504,10 @@ namespace TCC.Biometric.Payment.Controllers
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_030";
-                response.error.errorMessage = "customer not verified";
+                response.error.errorMessage = "Customer not verified";
                 response.error.errorDetails = " Please do Verification again";
 
-                return NotFound(response);
+                return Ok(response);
             }
             var paymentCard = _paymentCardRepository.GetByCustomerID(customer.Id).Result;
 
@@ -512,10 +515,10 @@ namespace TCC.Biometric.Payment.Controllers
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_030";
-                response.error.errorMessage = "payment Card not found";
+                response.error.errorMessage = "Payment card not found";
                 //response.error.errorDetails = " Please do Biometric Verification";
 
-                return NotFound(response);
+                return Ok(response);
             }
             var account = _accountRepository.GetByID(request.account_ID);
 
@@ -523,10 +526,10 @@ namespace TCC.Biometric.Payment.Controllers
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_035";
-                response.error.errorMessage = "account not found";
+                response.error.errorMessage = "Account not found";
                 //response.error.errorDetails = " Please do Biometric Verification";
 
-                return NotFound(response);
+                return Ok(response);
 
             }
 
@@ -557,12 +560,12 @@ namespace TCC.Biometric.Payment.Controllers
 
             response.data.customer = _autoMapper.Map<CustomerResponseDto>(customer);
             //response.data.paymentCard = _autoMapper.Map<PaymentCardResponseDto>(paymentCard);
-            response.data.biometricVerification = _autoMapper.Map<BiometricVerificationResponseDto>(biometricVerification);
+            response.data.biometricVerification = new BiometricVerificationResponseDto();
             //response.data.customer.biometric.Add( _autoMapper.Map<BiometricResponseDto>(biometric));
-
+                        
+            await _triggerRepository.TriggerSuccessAsync(request.billNumber);
+            
             response.success = true;
-
-
             return Ok(response);
         }
 

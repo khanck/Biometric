@@ -11,6 +11,8 @@ namespace TCC.Payment.Data.Interfaces
     public interface ITriggerRepository
     {
         Task<Trigger> GetLive(string device_ID);
+        Task<List<Trigger>> DiscardOldPendingTriggerAsync(string device_ID);
+        Task<List<Trigger>> TriggerSuccessAsync(string billNumber);
         Trigger GetByID(Guid id);
         IQueryable<Trigger> GetAllAsQuerable();
         Trigger Add(Trigger obj);

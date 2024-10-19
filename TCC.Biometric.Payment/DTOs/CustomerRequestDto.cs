@@ -17,7 +17,7 @@ namespace TCC.Biometric.Payment.DTOs
         [EmailAddress]
         public string email { get; init; } = null!;
 
-        [RegularExpression(@"^[0]{1}[0-9]{9}$", ErrorMessage = "invalid mobile number")]
+        //[RegularExpression(@"^[0]{1}[0-9]{9}$", ErrorMessage = "invalid mobile number")]
         public string mobile { get; init; } = null!;
 
         [StringLength(100)]

@@ -63,7 +63,7 @@ namespace TCC.Biometric.Payment.Controllers
             //    return Unauthorized();
 
             var response = new ResultDto<TriggerResponseDto>();
-
+            await _triggerRepository.DiscardOldPendingTriggerAsync(request.device_ID);
 
             var trigger = _autoMapper.Map<Trigger>(request);
             trigger.createdDate = DateTime.Now;

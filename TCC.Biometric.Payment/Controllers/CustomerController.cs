@@ -111,8 +111,8 @@ namespace TCC.Biometric.Payment.Controllers
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_035";
-                response.error.errorMessage = "User is already existing";
-                response.error.errorDetails = "User is already existing";
+                response.error.errorMessage = "Email already exists";
+                response.error.errorDetails = "Email already exists";
 
                 return Ok(response);
             }
@@ -129,10 +129,10 @@ namespace TCC.Biometric.Payment.Controllers
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_031";
-                response.error.errorMessage = "issue in Biometric face Verification";
-                //response.error.errorDetails = " Please do Biometric Verification";
+                response.error.errorMessage = "Issue in biometric face verification";
+                //response.error.errorDetails = " Please do biometric Verification";
 
-                return NotFound(response);
+                return Ok(response);
             }
 
             if (!userExists.searchResult.IsNullOrEmpty())
@@ -142,7 +142,9 @@ namespace TCC.Biometric.Payment.Controllers
                 response.error.errorMessage = "User is already existing in ABIS";
                 response.error.errorDetails = " User is already existing in ABIS ";
 
-                return Conflict(response);
+                _logger.Information("user Exists abis " + JsonConvert.SerializeObject(userExists));
+
+                return Ok(response);
             }
 
 
@@ -236,10 +238,10 @@ namespace TCC.Biometric.Payment.Controllers
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_031";
-                response.error.errorMessage = "issue in ABIS Enrolment ";
+                response.error.errorMessage = "Issue in ABIS enrolment ";
                 //response.error.errorDetails = " Please do Biometric Verification";
 
-                return NotFound(response);
+                return Ok(response);
             }
 
             response.data = _autoMapper.Map<CustomerResponseDto>(customer);
@@ -465,9 +467,9 @@ namespace TCC.Biometric.Payment.Controllers
 
             person.faceModality.faces.Add(face);
 
-            var result = _innovatricsAbis.EnrollPerson(person);
+            var result = _innovatricsAbis.EnrollPerson(person).Result;
 
-            if (result.Id == 0)
+            if (!result.IsSuccess)
             {
                 response.error = new ErrorDto();
                 response.error.errorCode = "BP_400";
@@ -504,7 +506,7 @@ namespace TCC.Biometric.Payment.Controllers
             AbisEnrollUser person = new AbisEnrollUser();
 
             person.enrolledAt = DateTime.Now;
-            person.externalId = customer.Id.ToString();
+            person.externalId = customer.Id.ToString().ToLower();
             person.enrollAction = new EnrollAction() { enrollActionType = "None", referenceExternalId = customer.Id.ToString() };
             person.customDetails = new PersonInfo() { givenNames = customer.firstName, surname = customer.lastName, email = customer.email };
             person.faceModality = new Modality();

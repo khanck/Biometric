@@ -19,11 +19,28 @@ namespace TCC.Payment.Data.Repositories
         {
             return await DbSet.Where(o => o.device_ID == device_ID && o.status==TriggerStatus.pending && o.createdDate >= DateTime.Now.AddSeconds(-50)).OrderByDescending(o => o.createdDate).FirstOrDefaultAsync();
         }
-
-        //public async Task<Trigger> DiscardOldTrigger(string device_ID)
-        //{
-        //    return await DbSet.Update(o => o.device_ID == device_ID && o.status == TriggerStatus.pending).OrderByDescending(o => o.createdDate).FirstOrDefaultAsync();
-        //}
+        public async Task<List<Trigger>> DiscardOldPendingTriggerAsync(string device_ID)
+        {
+            var list= await DbSet.Where(o => o.device_ID == device_ID && o.status == TriggerStatus.pending).ToListAsync();
+            foreach (Trigger item in list)
+            {
+                item.status = TriggerStatus.expired;
+                DbSet.Update(item);
+            }
+           
+            return list;
+        }
+        public async Task<List<Trigger>> TriggerSuccessAsync(string billNumber)
+        {
+            var list = await DbSet.Where(o => o.billNumber == billNumber && o.status == TriggerStatus.pending).ToListAsync();
+            foreach (Trigger item in list)
+            {
+                item.status = TriggerStatus.success;
+                DbSet.Update(item);
+            }
+            SaveChangesAsync();
+            return list;
+        }
 
     }
 }
