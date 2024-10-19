@@ -114,7 +114,7 @@ namespace TCC.Biometric.Payment.Controllers
                 response.error.errorMessage = "User is already existing";
                 response.error.errorDetails = "User is already existing";
 
-                return Conflict(response);
+                return Ok(response);
             }
 
             Identification identification = new Identification();
