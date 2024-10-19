@@ -10,7 +10,7 @@ namespace TCC.Payment.Integration.Models.Innovatrics
     {
         public string errorCode { get; set; }        
         public string errorMessage { get; set; }
-        public string errorDetails { get; set; }
+        //public string errorDetails { get; set; }
         public string responseUrl { get; set; }
 
     }

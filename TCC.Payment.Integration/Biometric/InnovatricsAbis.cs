@@ -69,14 +69,14 @@ namespace TCC.Payment.Integration.Biometric
                             //var str = response.Content.ReadAsStringAsync();
                             result = JsonConvert.DeserializeObject<AbisResponse>(await response.Content.ReadAsStringAsync());
                             result.IsSuccess = true;
-                            _logger.Information(" InnovatricsAbis EnrollPerson: Success   ID :{0}"/*, result.transId*/);
+                            _logger.Information(" InnovatricsAbis EnrollPerson: Success for :{0}", person.customDetails.email);
                         }
                         else
                         {
                             //result.ResultCode = (int)response.StatusCode;
                             result.error = JsonConvert.DeserializeObject<AbisError>(await response.Content.ReadAsStringAsync());
 
-                            _logger.Error(" InnovatricsAbis EnrollPerson: Error :  ID:{0}", JsonConvert.SerializeObject(result.error));
+                            _logger.Error(" InnovatricsAbis EnrollPerson: Error :{0}", JsonConvert.SerializeObject(result.error));
 
                         }
                     }
@@ -87,7 +87,7 @@ namespace TCC.Payment.Integration.Biometric
                     //result.ResultCode = 500;
                     //result.message = ex.Message;
 
-                    _logger.Error("InnovatricsAbis EnrollPerson :Internal error {0}", ex);
+                    _logger.Error("InnovatricsAbis EnrollPerson :Internal error :{0}", ex);
                 }
 
             }).Wait();
@@ -136,7 +136,7 @@ namespace TCC.Payment.Integration.Biometric
                             //var str = response.Content.ReadAsStringAsync();
                             result.searchResult = JsonConvert.DeserializeObject<List<AbisResponse>>(await response.Content.ReadAsStringAsync());
                             result.IsSuccess = true;
-                            _logger.Information(" InnovatricsAbis IdentifyByFace: Success   ID :{0}"/*, result.transId*/);
+                            _logger.Information(" InnovatricsAbis IdentifyByFace: Success ");
                         }
                         else
                         {
@@ -144,7 +144,7 @@ namespace TCC.Payment.Integration.Biometric
                             //var str = response.Content.ReadAsStringAsync();
                             result.error = JsonConvert.DeserializeObject<AbisError>(await response.Content.ReadAsStringAsync());
 
-                            _logger.Error(" InnovatricsAbis IdentifyByFace: Error :  ID:{0} {1}"/*, result.transId, JsonConvert.SerializeObject(result)*/);
+                            _logger.Error(" InnovatricsAbis IdentifyByFace: Error :{0}", JsonConvert.SerializeObject(result.error));
 
                         }
                     }
@@ -155,7 +155,7 @@ namespace TCC.Payment.Integration.Biometric
                     //result.ResultCode = 500;
                     //result.message = ex.Message;
 
-                    _logger.Error("InnovatricsAbis IdentifyByFace :Internal error {0}", ex);
+                    _logger.Error("InnovatricsAbis IdentifyByFace :Internal error :{0}", ex);
                 }
 
             }).Wait();
@@ -165,7 +165,7 @@ namespace TCC.Payment.Integration.Biometric
         }
 
         //hard delete
-        public async Task<AbisResponse> DeletePerson(Guid externalId)
+        public async Task<AbisResponse> DeletePerson(string externalId)
         {
 
             AbisResponse? result = new AbisResponse();
@@ -197,17 +197,17 @@ namespace TCC.Payment.Integration.Biometric
                     {
                         if (response.IsSuccessStatusCode)
                         {
-                            // var str = response.Content.ReadAsStringAsync();
+                            var str = response.Content.ReadAsStringAsync();
                             result = JsonConvert.DeserializeObject<AbisResponse>(await response.Content.ReadAsStringAsync());
                             result.IsSuccess = true;
-                            _logger.Information(" InnovatricsAbis DeletePerson: Success   ID :{0}"/*, result.transId*/);
+                            _logger.Information(" InnovatricsAbis DeletePerson: Success   externalId :{0}", externalId);
                         }
                         else
-                        {
+                        {                            
                             //result.ResultCode = (int)response.StatusCode;
                             result.error = JsonConvert.DeserializeObject<AbisError>(await response.Content.ReadAsStringAsync());
 
-                            _logger.Error(" InnovatricsAbis DeletePerson: Error :  ID:{0}", JsonConvert.SerializeObject(result.error));
+                            _logger.Error(" InnovatricsAbis DeletePerson: Error :{0}", JsonConvert.SerializeObject(result.error));
 
                         }
                     }
@@ -218,7 +218,7 @@ namespace TCC.Payment.Integration.Biometric
                     //result.ResultCode = 500;
                     //result.message = ex.Message;
 
-                    _logger.Error("InnovatricsAbis DeletePerson :Internal error {0}", ex);
+                    _logger.Error("InnovatricsAbis DeletePerson :Internal error :{0}", ex);
                 }
 
             }).Wait();

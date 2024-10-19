@@ -46,7 +46,7 @@ namespace TCC.Biometric.Payment.Controllers
             _autoMapper = autoMapper;
             _logger = logger;
             _alpetaServer = alpetaServe;
-            _innovatricsAbis=innovatricsAbis;
+            _innovatricsAbis = innovatricsAbis;
         }
 
         [Route("Health")]
@@ -59,7 +59,7 @@ namespace TCC.Biometric.Payment.Controllers
 
 
         [Route("get")]
-        [HttpGet]     
+        [HttpGet]
         //[OpenApiTags("OnboardingCustomer")]  
         [ProducesResponseType(typeof(ResultDto<CustomerResponseDto>), StatusCodes.Status200OK)]
         [Produces(typeof(ResultDto<CustomerResponseDto>))]
@@ -102,7 +102,7 @@ namespace TCC.Biometric.Payment.Controllers
             //    return Unauthorized();
 
             //_logger.Information("request image " + request.biometric.FirstOrDefault().biometricData);
-            
+
 
             var response = new ResultDto<CustomerResponseDto>();
 
@@ -178,7 +178,7 @@ namespace TCC.Biometric.Payment.Controllers
             //customer.Id = biometricResult.Entity.Id;
             customer.createdDate = DateTime.Now;
             customer.status = CustomerStatus.active;
-           
+
 
             //add user to Alpeta server
             /*
@@ -228,12 +228,12 @@ namespace TCC.Biometric.Payment.Controllers
                 DownloadInfo = downloadInfo
             });
 
-            */ 
+            */
             //End
 
 
             // send To Abis           
-            var abisResponse =await EnrollUserToAbis(customer, biometric);
+            var abisResponse = await EnrollUserToAbis(customer, biometric);
             if (!abisResponse.IsSuccess)
             {
                 response.error = new ErrorDto();
@@ -261,8 +261,8 @@ namespace TCC.Biometric.Payment.Controllers
             //if ((Request.Headers["Authorization"].Count == 0) || (!_authenticationService.IsValidUser(AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]))))
             //    return Unauthorized();
 
-           
- 
+
+
             var response = new ResultDto<CustomerResponseDto>();
 
             var customer = _customerRepository.GetByID(request.customer_ID);
@@ -429,7 +429,7 @@ namespace TCC.Biometric.Payment.Controllers
             var response = new ResultDto<CustomerResponseDto>();
 
             var customer = _customerRepository.GetByID(request.customer_ID);
-            
+
 
             if (customer == null)
             {
@@ -452,18 +452,18 @@ namespace TCC.Biometric.Payment.Controllers
                 return Conflict(response);
             }
 
-            AbisEnrollUser person=new AbisEnrollUser();
-           
-            person.enrolledAt=DateTime.Now;
-            person.externalId= customer.Id.ToString();
-            person.enrollAction = new EnrollAction (){ enrollActionType = request.enrollActionType, referenceExternalId= customer.Id.ToString() };
+            AbisEnrollUser person = new AbisEnrollUser();
+
+            person.enrolledAt = DateTime.Now;
+            person.externalId = customer.Id.ToString();
+            person.enrollAction = new EnrollAction() { enrollActionType = request.enrollActionType, referenceExternalId = customer.Id.ToString() };
             person.customDetails = new PersonInfo() { givenNames = customer.firstName, surname = customer.lastName, email = customer.email };
             person.faceModality = new Modality();
             person.faceModality.faces = new List<Face>();
 
-            AbisImage faceImage=new AbisImage() { captureDevice="user mobile", dataBytes= image.biometricData};
-            Face face=new Face();
-            face.image= faceImage;
+            AbisImage faceImage = new AbisImage() { captureDevice = "user mobile", dataBytes = image.biometricData };
+            Face face = new Face();
+            face.image = faceImage;
 
             person.faceModality.faces.Add(face);
 
@@ -482,6 +482,49 @@ namespace TCC.Biometric.Payment.Controllers
             response.success = true;
             return Ok(response);
 
+        }
+
+        [Route("deletefromabis")]
+        [HttpDelete]
+        [ProducesResponseType(typeof(ResultDto<CustomerResponseDto>), StatusCodes.Status200OK)]
+        [Produces(typeof(ResultDto<CustomerResponseDto>))]
+        public async Task<IActionResult> DeleteFromAbis(string id, CancellationToken cancellationToken = default)
+        {
+            var response = new ResultDto<CustomerResponseDto>();
+
+            //var customer = _customerRepository.GetByID(id);
+            //if (customer == null)
+            //{
+            //    response.error = new ErrorDto();
+            //    response.error.errorCode = "BP_001";
+            //    response.error.errorMessage = "Customer Not Found";
+            //    //response.error.errorDetails = "digital ID Customer Not Found";
+
+            //    return Conflict(response);
+            //}
+            //var biometrics = _biometricRepository.GetByID(id);
+            //if (customer == null)
+            //{
+            //    response.error = new ErrorDto();
+            //    response.error.errorCode = "BP_001";
+            //    response.error.errorMessage = "Biometrics Not Found";
+            //    //response.error.errorDetails = "digital ID Customer Not Found";
+
+            //    return Conflict(response);
+            //}
+            var abisResponse = _innovatricsAbis.DeletePerson(id).Result;
+            if (!abisResponse.IsSuccess)
+            {
+                response.error = new ErrorDto();
+                response.error.errorCode = "BP_001";
+                response.error.errorMessage = "error in delete from abis";
+                //response.error.errorDetails = "digital ID Customer Not Found";
+                _logger.Information("Error in  delete person from abis " + JsonConvert.SerializeObject(abisResponse));
+                return Conflict(response);
+            }
+            //response.data = _autoMapper.Map<CustomerResponseDto>(customer);
+            response.success = true;
+            return Ok(response);
         }
 
         private static int GetPictureSizeInKB(string base64Picture)
@@ -523,4 +566,4 @@ namespace TCC.Biometric.Payment.Controllers
             return result;
         }
     }
-    }
+}

@@ -11,6 +11,6 @@ namespace TCC.Payment.Integration.Interfaces
     {
         Task<AbisResponse> EnrollPerson(AbisEnrollUser person);
         Task<AbisResponse> IdentifyByFace(Identification request);
-        Task<AbisResponse> DeletePerson(Guid externalId);
+        Task<AbisResponse> DeletePerson(string externalId);
     }
 }
