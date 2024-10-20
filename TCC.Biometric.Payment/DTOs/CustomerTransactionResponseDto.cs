@@ -20,7 +20,7 @@ namespace TCC.Biometric.Payment.DTOs
         [StringLength(50)]
         public string? billNumber { get; init; }
         public double amount { get; init; }
-        public DateTime createdDate { get; set; }
+        public string createdDate { get; set; }
 
         [StringLength(50)]
         public string transactionNumber { get; init; }

@@ -38,7 +38,8 @@ namespace TCC.Biometric.Payment.Profiles
             CreateMap<Transaction, TransactionResponseDto>();
             CreateMap<TransactionResponseDto, Transaction>();
             CreateMap<Transaction, BusinessTransactionResponseDto>();
-            CreateMap<Transaction, CustomerTransactionResponseDto>();
+            CreateMap<Transaction, CustomerTransactionResponseDto>()
+                 .ForMember(dest => dest.createdDate, src => src.MapFrom(src => src.createdDate.ToString("yyyy-MM-dd HH:mm"))); ;
 
             CreateMap<BiometricPaymentRequestDto, Transaction>()
                 .ForMember(dest => dest.TransactionType, src => src.MapFrom(src => TransactionTypes.payment));
